@@ -1,0 +1,9 @@
+{
+    "AUTHOR" : "Seraphim Pardee (vypr#0001)",
+    "NAME" : "oikonomia",
+    "SHORT" : "A full-stack cog for Oikonomia.",
+    "DESCRIPTION" : "A full-stack cog for Oikonomia.",
+    "TAGS" : ["oikonomia", "custom"],
+    "REQUIREMENTS" : ["tabulate"],
+    "HIDDEN" : false
+}
