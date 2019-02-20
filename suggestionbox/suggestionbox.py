@@ -24,7 +24,7 @@ class SuggestionBox(commands.Cog):
         self.config.register_guild(**default_guild)
 
     @commands.group(name="setsuggest", pass_context=True, no_pm=True)
-    @checks.admin_or_permissions(Manage_server=True)
+    @checks.admin_or_permissions(manage_guild=True)
     async def setsuggest(self, ctx):
         """configuration settings"""
 
@@ -120,10 +120,7 @@ class SuggestionBox(commands.Cog):
             self.usercache.append(author.id)
                     
             dm = await author.send("Please respond to this message with your suggestion.\nYour "
-                                   "suggestion should be a single message (one image allowed)."
-                                   "If you are suggesting an emote and "
-                                   "it is common on many other servers, global servers, or personal, it will most likely not be accepted.")
-                                 
+                                   "suggestion should be a single message (one image allowed).")
         
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
@@ -152,8 +149,8 @@ class SuggestionBox(commands.Cog):
         if len(message.attachments) > 0:
             item = message.attachments[0]
 
-            if item["url"].endswith((".jpg", ".png", ".gif", ".jpeg")):
-                em.set_image(url=item["url"])
+            if item.url.endswith((".jpg", ".png", ".gif", ".jpeg")):
+                em.set_image(url=item.url)
 
         anonymous = await group.anonymous()
 
