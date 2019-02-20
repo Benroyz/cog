@@ -122,7 +122,7 @@ class SuggestionBox(commands.Cog):
             dm = await author.send("Please respond to this message with your suggestion.\nYour "
                                    "suggestion should be a single message (one image allowed). 
                                    "If you are suggesting an emote and
-                                  "it is common on many other servers, global servers, or personal, it will most likely not be accepted.")
+                                   "it is common on many other servers, global servers, or personal, it will most likely not be accepted.")
                                  
         
             def check_message(m):
