@@ -1,11 +1,13 @@
 import discord
-import asyncio
-from redbot.core import commands, checks, Config
-from redbot.core.utils.chat_formatting import pagify, box
+from redbot.core import commands, checks
+from .utils.chat_formatting import pagify, box
 import logging
+from cogs.utils.dataIO import dataIO
 import os
 import time
 import re
+
+__version__ = '1.6.0'
 
 try:
     from tabulate import tabulate
@@ -15,16 +17,16 @@ except Exception as e:
 log = logging.getLogger('red.restrict')
 
 UNIT_TABLE = {'s': 1, 'm': 60, 'h': 60 * 60, 'd': 60 * 60 * 24}
-UNIT_SUF_TABLE = {
-    'sec': (1, ''),
-    'min': (60, ''),
-    'hr': (60 * 60, 's'),
-    'day': (60 * 60 * 24, 's')
-}
-
+UNIT_SUF_TABLE = {'sec': (1, ''),
+                  'min': (60, ''),
+                  'hr': (60 * 60, 's'),
+                  'day': (60 * 60 * 24, 's')
+                  }
 DEFAULT_TIMEOUT = '30m'
 PURGE_MESSAGES = 1  # for crestrict
-DEFAULT_ROLE_NAME = 'restricted'
+PATH = 'data/restrict/'
+JSON = PATH + 'settings.json'
+DEFAULT_ROLE_NAME = 'Restricted'
 
 
 class BadTimeExpr(Exception):
@@ -66,21 +68,16 @@ def _generate_timespec(sec):
     return ', '.join(timespec)
 
 
-class restrict(commands.Cog):
+class Restrict:
     "Put misbehaving users in timeout"
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=(3322665 + 4))
+        self.json = compat_load(JSON)
         self.handles = {}
-
         bot.loop.create_task(self.on_load())
 
-        default_guild = {
-            "role_id": None,
-            "restricted_ids": {}
-        }
-
-        self.config.register_guild(**default_guild)
+    def save(self):
+        dataIO.save_json(JSON, self.json)
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -98,198 +95,200 @@ class restrict(commands.Cog):
         try:
             await self.bot.purge_from(ctx.message.channel, limit=PURGE_MESSAGES + 1, check=check)
         except discord.errors.Forbidden:
-            await ctx.send("restrictment set, but I need permissions to manage messages to clean up.")
+            await self.bot.say("Restriction set, but I need permissions to manage messages to clean up.")
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
     async def restrict(self, ctx, user: discord.Member, duration: str=None, *, reason: str=None):
         """Puts a user into timeout for a specified time period, with an optional reason.
         Time specification is any combination of number with the units s,m,h,d.
-        Example: !restrict @dumbo 1.1h10m To the toll houses with you!"""
+        Example: !restrict @idiot 1.1h10m Enough bitching already!"""
 
-        await ctx.send("attempting")
         await self._restrict_cmd_common(ctx, user, duration, reason)
-        await ctx.send("finished")
 
     @commands.command(pass_context=True, no_pm=True, name='lsrestrict')
     @checks.mod_or_permissions(manage_messages=True)
     async def list_restricted(self, ctx):
         """Shows a table of restricted users with time, mod and reason.
         Displays restricted users, time remaining, responsible moderator and
-        the reason for restrictment, if any."""
-        guild = ctx.guild
+        the reason for Restriction, if any."""
+        server = ctx.message.server
+        server_id = server.id
+        if not (server_id in self.json and self.json[server_id]):
+            await self.bot.say("No users are currently restricted.")
+            return
 
-        guild_group = self.config.guild(guild)
-
-        async with guild_group.restricted_ids() as restricted_ids:
-            if not restricted_ids:
-                await ctx.send("No users are currently restricted.")
-                return
-
-            def getmname(mid):
-                member = discord.utils.get(guild.members, id=mid)
-                if member:
-                    if member.nick:
-                        return '%s (%s)' % (member.nick, member)
-                    else:
-                        return str(member)
+        def getmname(mid):
+            member = discord.utils.get(server.members, id=mid)
+            if member:
+                if member.nick:
+                    return '%s (%s)' % (member.nick, member)
                 else:
-                    return '(member not present, id #%d)'
+                    return str(member)
+            else:
+                return '(member not present, id #%d)'
 
-            headers = ['Member', 'Remaining', 'restricted by', 'Reason']
-            table = []
-            disp_table = []
-            now = time.time()
-            for member_id, data in restricted_ids.items():
-                if not member_id.isdigit():
-                    continue
+        headers = ['Member', 'Remaining', 'restricted by', 'Reason']
+        table = []
+        disp_table = []
+        now = time.time()
+        for member_id, data in self.json[server_id].items():
+            if not member_id.isdigit():
+                continue
 
-                member_name = getmname(member_id)
-                restricter_name = getmname(data['by'])
-                reason = data['reason']
-                t = data['until']
-                sort = t if t else float("inf")
-                table.append((sort, member_name, t, restricter_name, reason))
+            member_name = getmname(member_id)
+            restricter_name = getmname(data['by'])
+            reason = data['reason']
+            t = data['until']
+            sort = t if t else float("inf")
+            table.append((sort, member_name, t, restricter_name, reason))
 
-            for _, name, rem, mod, reason in sorted(table, key=lambda x: x[0]):
-                remaining = _generate_timespec(rem - now) if rem else 'forever'
-                if not reason:
-                    reason = 'n/a'
-                disp_table.append((name, remaining, mod, reason))
+        for _, name, rem, mod, reason in sorted(table, key=lambda x: x[0]):
+            remaining = _generate_timespec(rem - now) if rem else 'forever'
+            if not reason:
+                reason = 'n/a'
+            disp_table.append((name, remaining, mod, reason))
 
-            for page in pagify(tabulate(disp_table, headers)):
-                await ctx.send(box(page))
+        for page in pagify(tabulate(disp_table, headers)):
+            await self.bot.say(box(page))
+
+    @commands.command(pass_context=True, no_pm=True)
+    @checks.mod_or_permissions(manage_messages=True)
+    async def rwarn(self, ctx, user: discord.Member, *, reason: str=None):
+        """Warns a user with boilerplate about the rules."""
+        msg = ['Hey %s, ' % user.mention]
+        msg.append("you're doing something that might get you muted if you keep "
+                   "doing it.")
+        if reason:
+            msg.append(" Specifically, %s." % reason)
+        msg.append("Be sure to review the server rules.")
+        await self.bot.say(' '.join(msg))
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
     async def unrestrict(self, ctx, user: discord.Member):
-        """Removes restrictment from a user. Same as removing the role directly"""
-        role = await self.get_role(user.guild)
-
-        sid = user.guild.id
+        """Removes Restriction from a user. Same as removing the role directly"""
+        role = await self.get_role(user.server)
+        sid = user.server.id
         if role and role in user.roles:
-            reason = 'restrictment manually ended early by %s. ' % ctx.message.author
-            
-            guild_group = self.config.guild(user.guild)
-
-            async with guild_group.restricted_ids() as restricted_ids:
-                if restricted_ids[user.id]['reason']:
-                    reason += restricted_ids[user.id]['reason']
-            
+            reason = 'Restriction manually ended early by %s. ' % ctx.message.author
+            if self.json[sid][user.id]['reason']:
+                reason += self.json[sid][user.id]['reason']
             await self._unrestrict(user, reason)
-            await ctx.send('Done.')
+            await self.bot.say('Done.')
         elif role:
-            await ctx.send("That user wasn't restricted.")
+            await self.bot.say("That user wasn't restricted.")
         else:
-            await ctx.send("The restrict role couldn't be found in this guild.")
+            await self.bot.say("The restrict role couldn't be found in this server.")
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
     async def fixrestrict(self, ctx):
-        guild = ctx.guild
+        server = ctx.message.server
         default_name = DEFAULT_ROLE_NAME
-
-        guild_group = self.config.guild(guild)
-
-        role_id = await guild_group.role_id()
+        role_id = self.json.get(server.id, {}).get('ROLE_ID')
 
         if role_id:
-            role = discord.utils.get(guild.roles, id=role_id)
+            role = discord.utils.get(server.roles, id=role_id)
         else:
-            role = discord.utils.get(guild.roles, name=default_name)
+            role = discord.utils.get(server.roles, name=default_name)
 
-        perms = guild.me.guild_permissions
+        perms = server.me.server_permissions
         if not perms.manage_roles and perms.manage_channels:
-            await ctx.send("The Manage Roles and Manage Channels permissions are required to use this command.")
+            await self.bot.say("The Manage Roles and Manage Channels permissions are required to use this command.")
             return
 
         if not role:
             msg = "The %s role doesn't exist; Creating it now (please be sure to move it to the top of the roles below any staff or bots)... " % default_name
 
-            msgobj = await ctx.send(msg)
+            msgobj = await self.bot.say(msg)
 
             perms = discord.Permissions.none()
-            role = await self.bot.create_role(guild, name=default_name, permissions=perms)
+            role = await self.bot.create_role(server, name=default_name, permissions=perms)
         else:
-            msgobj = await ctx.send('restrict role exists... ')
+            msgobj = await self.bot.say('restrict role exists... ')
 
-        msgobj = await msgobj.edit(content=msgobj.content + '(re)configuring channels... ')
+        msgobj = await self.bot.edit_message(msgobj, msgobj.content + '(re)configuring channels... ')
 
-        for channel in guild.channels:
+        for channel in server.channels:
             await self.setup_channel(channel, role)
 
-        await ctx.send("Done.")
+        await self.bot.edit_message(msgobj, msgobj.content + 'done.')
 
         if role and role.id != role_id:
-            role_id = role.id
+            if server.id not in self.json:
+                self.json[server.id] = {}
+            self.json[server.id]['ROLE_ID'] = role.id
+            self.save()
 
-    async def get_role(self, guild, quiet=False, create=False):
-        guild_group = self.config.guild(guild)
-
-        role_id = await guild_group.role_id()
+    async def get_role(self, server, quiet=False, create=False):
         default_name = DEFAULT_ROLE_NAME
+        role_id = self.json.get(server.id, {}).get('ROLE_ID')
 
         if role_id:
-            role = discord.utils.get(guild.roles, id=role_id)
+            role = discord.utils.get(server.roles, id=role_id)
         else:
-            role = discord.utils.get(guild.roles, name=default_name)
+            role = discord.utils.get(server.roles, name=default_name)
 
         if create and not role:
-            perms = guild.me.guild_permissions
-                
+            perms = server.me.server_permissions
             if not perms.manage_roles and perms.manage_channels:
-                await ctx.send("The Manage Roles and Manage Channels permissions are required to use this command.")
+                await self.bot.say("The Manage Roles and Manage Channels permissions are required to use this command.")
                 return None
+
             else:
                 msg = "The %s role doesn't exist; Creating it now (please be sure to move it to the top of the roles below any staff or bots)..." % default_name
 
                 if not quiet:
                     msgobj = await self.bot.reply(msg)
 
-                log.debug('Creating restrict role in %s' % guild.name)
+                log.debug('Creating restrict role in %s' % server.name)
                 perms = discord.Permissions.none()
-                role = await self.bot.create_role(guild, name=default_name, permissions=perms)
+                role = await self.bot.create_role(server, name=default_name, permissions=perms)
 
                 if not quiet:
-                    msgobj = await msgobj.edit(content=msgobj.content + 'configuring channels... ')
+                    msgobj = await self.bot.edit_message(msgobj, msgobj.content + ' configuring channels... ')
 
-                for channel in guild.channels:
+                for channel in server.channels:
                     await self.setup_channel(channel, role)
 
                 if not quiet:
-                    await msgobj.edit(content=msgobj.content + 'done.')
+                    await self.bot.edit_message(msgobj, msgobj.content + 'done.')
 
         if role and role.id != role_id:
-            role_id = role.id
+            if server.id not in self.json:
+                self.json[server.id] = {}
+            self.json[server.id]['ROLE_ID'] = role.id
+            self.save()
 
         return role
 
     async def setup_channel(self, channel, role):
         perms = discord.PermissionOverwrite()
 
-        if isinstance(channel, discord.TextChannel):
-            perms.send_messages = False
-            perms.send_tts_messages = False
+        if channel.type == discord.ChannelType.text:
+            perms.embed_links = False
+            perms.attach_files = False
             perms.add_reactions = False
-        elif isinstance(channel, discord.VoiceChannel):
-            perms.speak = False
 
-        await channel.set_permissions(role, overwrite=perms)
+        await self.bot.edit_channel_permissions(channel, role, overwrite=perms)
 
     async def on_load(self):
         await self.bot.wait_until_ready()
 
-        all_guilds = await self.config.all_guilds()
+        for serverid, members in self.json.copy().items():
+            server = self.bot.get_server(serverid)
 
-        for guildid, members in all_guilds.copy().items():
-            guild = self.bot.get_guild(guildid)
+            # Bot is no longer in the server
+            if not server:
+                del(self.json[serverid])
+                continue
 
-            me = guild.me
-            role = await self.get_role(guild, quiet=True, create=True)
-            
+            me = server.me
+            role = await self.get_role(server, quiet=True, create=True)
             if not role:
                 log.error("Needed to create restrict role in %s, but couldn't."
-                          % guild.name)
+                          % server.name)
                 continue
 
             for member_id, data in members.copy().items():
@@ -300,38 +299,30 @@ class restrict(commands.Cog):
                 if until:
                     duration = until - time.time()
 
-                member = guild.get_member(member_id)
+                member = server.get_member(member_id)
+                if until and duration < 0:
+                    if member:
+                        reason = 'Restriction removal overdue, maybe bot was offline. '
+                        if self.json[server.id][member_id]['reason']:
+                            reason += self.json[server.id][member_id]['reason']
+                        await self._unrestrict(member, reason)
+                    else:  # member disappeared
+                        del(self.json[server.id][member_id])
 
-                guild_group = self.config.guild(guild)
+                elif member and role not in member.roles:
+                    if role >= me.top_role:
+                        log.error("Needed to re-add restrict role to %s in %s, "
+                                  "but couldn't." % (member, server.name))
+                        continue
+                    await self.bot.add_roles(member, role)
+                    if until:
+                        self.schedule_unrestrict(duration, member)
 
-                async with guild_group.restricted_ids() as restricted_ids:
-                    if until and duration < 0:
-                        if member:
-                            reason = 'restrictment removal overdue, maybe bot was offline. '
-                            
-                            if restricted_ids[member_id]['reason']:
-                                reason += restricted_ids[member_id]['reason']
-                            
-                            await self._unrestrict(member, reason)
-                        else:
-                            del(restricted_ids[member_id])
-                    elif member and role not in member.roles:
-                        if role >= me.top_role:
-                            log.error("Needed to re-add restrict role to %s in %s, "
-                                      "but couldn't." % (member, guild.name))
-                            continue
-                        await self.bot.add_roles(member, role)
-                        if until:
-                            self.schedule_unrestrict(duration, member)
-
+        self.save()
 
     async def _restrict_cmd_common(self, ctx, member, duration, reason, quiet=False):
-        guild = ctx.guild
+        server = ctx.message.server
         note = ''
-
-        if ctx.message.author.top_role <= member.top_role:
-            await ctx.send('Permission denied.')
-            return
 
         if duration and duration.lower() in ['forever', 'inf', 'infinite']:
             duration = None
@@ -343,56 +334,59 @@ class restrict(commands.Cog):
             try:
                 duration = _parse_time(duration)
                 if duration < 1:
-                    await ctx.send("Duration must be 1 second or longer.")
+                    await self.bot.say("Duration must be 1 second or longer.")
                     return False
             except BadTimeExpr as e:
-                await ctx.send("Error parsing duration: %s." % e.args)
+                await self.bot.say("Error parsing duration: %s." % e.args)
                 return False
 
-        role = await self.get_role(guild, quiet=quiet, create=True)
+        role = await self.get_role(server, quiet=quiet, create=True)
         if role is None:
-            await ctx.send("There is not a restricted role.")
             return
 
-        if role >= guild.me.top_role:
-            await ctx.send('The %s role is too high for me to manage.' % role)
+        if role >= server.me.top_role:
+            await self.bot.say('The %s role is too high for me to manage.' % role)
             return
 
-        guild_group = self.config.guild(guild)
+        if server.id not in self.json:
+            self.json[server.id] = {}
 
-        async with guild_group.restricted_ids() as restricted_ids:
-            if member.id in restricted_ids:
-                msg = 'User was already restricted; resetting their timer...'
-            elif role in member.roles:
-                msg = 'User was restricted but had no timer, adding it now...'
-            else:
-                msg = 'Done.'
+        if member.id in self.json[server.id]:
+            msg = 'User was already restricted; resetting their timer...'
+        elif role in member.roles:
+            msg = 'User was restricted but had no timer, adding it now...'
+        else:
+            msg = 'Done.'
 
-            if note:
-                msg += ' ' + note
+        if note:
+            msg += ' ' + note
 
-            restricted_ids[member.id] = {
-                'until': (time.time() + duration) if duration else None,
-                'by': ctx.message.author.id,
-                'reason': reason
-            }
+        if server.id not in self.json:
+            self.json[server.id] = {}
+
+        self.json[server.id][member.id] = {
+            'until': (time.time() + duration) if duration else None,
+            'by': ctx.message.author.id,
+            'reason': reason
+        }
 
         await self.bot.add_roles(member, role)
+        self.save()
 
         # schedule callback for role removal
         if duration:
             self.schedule_unrestrict(duration, member, reason)
 
         if not quiet:
-            await ctx.send(msg)
+            await self.bot.say(msg)
 
         return True
 
     # Functions related to unrestricting
 
-    async def schedule_unrestrict(self, delay, member, reason=None):
+    def schedule_unrestrict(self, delay, member, reason=None):
         """Schedules role removal, canceling and removing existing tasks if present"""
-        sid = member.guild.id
+        sid = member.server.id
 
         if sid not in self.handles:
             self.handles[sid] = {}
@@ -407,32 +401,28 @@ class restrict(commands.Cog):
 
     async def _unrestrict(self, member, reason=None):
         """Remove restrict role, delete record and task handle"""
-        role = await self.get_role(member.guild)
-
+        role = await self.get_role(member.server)
         if role:
             # Has to be done first to prevent triggering on_member_update listener
             self._unrestrict_data(member)
             await self.bot.remove_roles(member, role)
 
-            msg = 'Your restrictment in %s has ended.' % member.guild.name
+            msg = 'Your Restriction in %s has ended.' % member.server.name
             if reason:
                 msg += "\nReason was: %s" % reason
 
             await self.bot.send_message(member, msg)
 
-    async def _unrestrict_data(self, member):
+    def _unrestrict_data(self, member):
         """Removes restrict data entry and cancels any present callback"""
-        sid = member.guild.id
+        sid = member.server.id
+        if sid in self.json and member.id in self.json[sid]:
+            del(self.json[member.server.id][member.id])
+            self.save()
 
-        guild_group = self.config.guild(member.guild)
-
-        async with guild_group.restricted_ids() as restricted_ids:
-            if member.id in restricted_ids:
-                del(restricted_ids[member.id])
-
-            if sid in self.handles and member.id in self.handles[sid]:
-                self.handles[sid][member.id].cancel()
-                del(self.handles[sid][member.id])
+        if sid in self.handles and member.id in self.handles[sid]:
+            self.handles[sid][member.id].cancel()
+            del(self.handles[member.server.id][member.id])
 
     # Listeners
 
@@ -441,8 +431,7 @@ class restrict(commands.Cog):
         if channel.is_private:
             return
 
-        role = await self.get_role(channel.guild)
-        
+        role = await self.get_role(channel.server)
         if not role:
             return
 
@@ -450,41 +439,71 @@ class restrict(commands.Cog):
 
     async def on_member_update(self, before, after):
         """Remove scheduled unrestrict when manually removed"""
-        guild_group = self.config.guild(before.guild)
+        sid = before.server.id
 
-        async with guild_group.restricted_ids() as restricted_ids:
-            if not before.id in restricted_ids:
-                return
+        if not (sid in self.json and before.id in self.json[sid]):
+            return
 
-            role = await self.get_role(before.guild)
-            
-            if role and role in before.roles and role not in after.roles:
-                msg = 'Your restrictment in %s was ended early by a moderator/admin.' % before.guild.name
-                
-                if restricted_ids[before.id]['reason']:
-                    msg += '\nReason was: ' + restricted_ids[before.id]['reason']
+        role = await self.get_role(before.server)
+        if role and role in before.roles and role not in after.roles:
+            msg = 'Your Restriction in %s was ended early by a moderator/admin.' % before.server.name
+            if self.json[sid][before.id]['reason']:
+                msg += '\nReason was: ' + self.json[sid][before.id]['reason']
 
-                await self.bot.send_message(after, msg)
-                self._unrestrict_data(after)
+            await self.bot.send_message(after, msg)
+            self._unrestrict_data(after)
 
     async def on_member_join(self, member):
-        """Restore restrictment if restricted user leaves/rejoins"""
-        sid = member.guild.id
-        role = await self.get_role(member.guild)
+        """Restore Restriction if restricted user leaves/rejoins"""
+        sid = member.server.id
+        role = await self.get_role(member.server)
+        if not role or not (sid in self.json and member.id in self.json[sid]):
+            return
 
-        guild_group = self.config.guild(member.guild)
+        duration = self.json[sid][member.id]['until'] - time.time()
+        if duration > 0:
+            await self.bot.add_roles(member, role)
 
-        async with guild_group.restricted_ids() as restricted_ids:
-            if not role or not member.id in restricted_ids:
-                return
+            reason = 'Restriction re-added on rejoin. '
+            if self.json[sid][member.id]['reason']:
+                reason += self.json[sid][member.id]['reason']
 
-            duration = restricted_ids[member.id]['until'] - time.time()
-            if duration > 0:
-                await self.bot.add_roles(member, role)
+            if member.id not in self.handles[sid]:
+                self.schedule_unrestrict(duration, member, reason)
 
-                reason = 'restrictment re-added on rejoin. '
-                if restricted_ids[member.id]['reason']:
-                    reason += restricted_ids[member.id]['reason']
+    async def on_command(self, command, ctx):
+        if ctx.cog is self:
+            self.analytics.command(ctx)
 
-                if member.id not in self.handles[sid]:
-                    self.schedule_unrestrict(duration, member, reason)
+
+def compat_load(path):
+    data = dataIO.load_json(path)
+    for server, Restrictions in data.items():
+        for user, pdata in Restrictions.items():
+            if not user.isdigit():
+                continue
+
+            by = pdata.pop('givenby', None)  # able to read Kownlin json
+            by = by if by else pdata.pop('by', None)
+            pdata['by'] = by
+            pdata['until'] = pdata.pop('until', None)
+            pdata['reason'] = pdata.pop('reason', None)
+    return data
+
+
+def check_folder():
+    if not os.path.exists(PATH):
+        log.debug('Creating folder: data/restrict')
+        os.makedirs(PATH)
+
+
+def check_file():
+    if not dataIO.is_valid_json(JSON):
+        print('Creating empty %s' % JSON)
+        dataIO.save_json(JSON, {})
+
+
+def setup(bot):
+    check_folder()
+    check_file()
+    bot.add_cog(restrict(bot))
