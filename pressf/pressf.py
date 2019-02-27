@@ -1,8 +1,8 @@
 import discord
-from discord.ext import commands
+from redbot.core import commands
 import asyncio
 
-class PressF:
+class PressF(commands.Cog):
     """You can now pay repect to a person"""
 
     def __init__(self, bot):
