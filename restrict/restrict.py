@@ -424,13 +424,13 @@ class Restrict(commands.Cog):
         if role:
             # Has to be done first to prevent triggering on_member_update listener
             self._unrestrict_data(member)
-            await self.bot.remove_roles(member, role)
+            await member.remove_roles(role)
 
             msg = 'Your restriction in %s has ended.' % member.guild.name
             if reason:
                 msg += "\nReason was: %s" % reason
 
-            await self.bot.send_message(member, msg)
+            await member.send(msg)
 
     async def _unrestrict_data(self, member):
         """Removes restrict data entry and cancels any present callback"""
@@ -475,7 +475,7 @@ class Restrict(commands.Cog):
                 if restricted_ids[before.id]['reason']:
                     msg += '\nReason was: ' + restricted_ids[before.id]['reason']
 
-                await self.bot.send_message(after, msg)
+                await after.send(msg)
                 self._unrestrict_data(after)
 
     async def on_member_join(self, member):
