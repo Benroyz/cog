@@ -184,8 +184,8 @@ class Punish(commands.Cog):
             guild_group = self.config.guild(user.guild)
 
             async with guild_group.punished_ids() as punished_ids:
-                if punished_ids[user.id]['reason']:
-                    reason += punished_ids[user.id]['reason']
+                if punished_ids[str(user.id)]['reason']:
+                    reason += punished_ids[str(user.id)]['reason']
             
             await self._unpunish(user, reason)
             await ctx.send('Done.')
