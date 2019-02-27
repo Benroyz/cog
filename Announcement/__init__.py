@@ -1,7 +1,4 @@
-from announce.announce import announce
+from .announcement import Announcement
 
-
-async def setup(bot):
-    c = announce(bot)
-    await c.init()
-    bot.add_cog(c)
+def setup(bot):
+    bot.add_cog(Announcement(bot))
