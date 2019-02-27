@@ -66,7 +66,7 @@ def _generate_timespec(sec):
     return ', '.join(timespec)
 
 
-class Restrict:
+class Restrict(commands.Cog):
     "Put misbehaving users in timeout"
     def __init__(self, bot):
         self.bot = bot
