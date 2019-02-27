@@ -321,7 +321,7 @@ class Punish(commands.Cog):
                             log.error("Needed to re-add punish role to %s in %s, "
                                       "but couldn't." % (member, guild.name))
                             continue
-                        await member.add_roles([role.id])
+                        await member.add_roles(role)
                         if until:
                             self.schedule_unpunish(duration, member)
 
@@ -378,7 +378,7 @@ class Punish(commands.Cog):
                 'reason': reason
             }
 
-        await member.add_roles([role.id])
+        await member.add_roles(role)
 
         # schedule callback for role removal
         if duration:
@@ -481,7 +481,7 @@ class Punish(commands.Cog):
 
             duration = punished_ids[member.id]['until'] - time.time()
             if duration > 0:
-                await member.add_roles([role.id])
+                await member.add_roles(role)
 
                 reason = 'Punishment re-added on rejoin. '
                 if punished_ids[member.id]['reason']:
