@@ -161,7 +161,7 @@ class Punish(commands.Cog):
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
-    async def rwarn(self, ctx, user: discord.Member, *, reason: str=None):
+    async def pwarn(self, ctx, user: discord.Member, *, reason: str=None):
         """Warns a user with boilerplate about the rules."""
         msg = ['Hey %s, ' % user.mention]
         msg.append("you're doing something that might get you muted if you keep "
