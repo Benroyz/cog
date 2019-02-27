@@ -1,7 +1,7 @@
-from infoscreen.rules import InfoScreen
+from announcescreen.announce import announceScreen
 
 
 async def setup(bot):
-    c = InfoScreen(bot)
+    c = announceScreen(bot)
     await c.init()
     bot.add_cog(c)
