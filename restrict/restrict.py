@@ -96,9 +96,9 @@ class Restrict(commands.Cog):
             return m.id == ctx.message.id or m.author == user
 
         try:
-            await self.bot.purge_from(ctx.message.channel, limit=PURGE_MESSAGES + 1, check=check)
+            await self.bot.purge_from(ctx.channel, limit=PURGE_MESSAGES + 1, check=check)
         except discord.errors.Forbidden:
-            await self.bot.say("Restriction set, but I need permissions to manage messages to clean up.")
+            await ctx.send("Restriction set, but I need permissions to manage messages to clean up.")
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -169,7 +169,7 @@ class Restrict(commands.Cog):
         if reason:
             msg.append(" Specifically, %s." % reason)
         msg.append("Be sure to review the guild rules.")
-        await self.bot.say(' '.join(msg))
+        await ctx.send(' '.join(msg))
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -255,7 +255,7 @@ class Restrict(commands.Cog):
                 msg = "The %s role doesn't exist; Creating it now (please be sure to move it to the top of the roles below any staff or bots)..." % default_name
 
                 if not quiet:
-                    msgobj = await self.bot.reply(msg)
+                    msgobj = await ctx.send(msg)
 
                 log.debug('Creating restrict role in %s' % guild.name)
                 perms = discord.Permissions.none()
