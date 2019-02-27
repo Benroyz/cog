@@ -323,12 +323,12 @@ class Restrict(commands.Cog):
                         if member:
                             reason = 'restrictment removal overdue, maybe bot was offline. '
                             
-                            if restricted_ids[member_id]['reason']:
-                                reason += restricted_ids[member_id]['reason']
+                            if restricted_ids[str(member_id)]['reason']:
+                                reason += restricted_ids[str(member_id)]['reason']
                             
                             await self._unrestrict(member, reason)
                         else:
-                            del(restricted_ids[member_id])
+                            del(restricted_ids[str(member_id)])
                     elif member and role not in member.roles:
                         if role >= me.top_role:
                             log.error("Needed to re-add restrict role to %s in %s, "
@@ -342,7 +342,7 @@ class Restrict(commands.Cog):
         guild = ctx.guild
         note = ''
 
-        if ctx.message.author.top_role <= member.top_role:
+        if ctx.author.top_role <= member.top_role:
             await ctx.send('Permission denied.')
             return
 
@@ -374,7 +374,7 @@ class Restrict(commands.Cog):
         guild_group = self.config.guild(guild)
 
         async with guild_group.restricted_ids() as restricted_ids:
-            if member.id in restricted_ids:
+            if str(member_id) in restricted_ids:
                 msg = 'User was already restricted; resetting their timer...'
             elif role in member.roles:
                 msg = 'User was restricted but had no timer, adding it now...'
@@ -384,9 +384,9 @@ class Restrict(commands.Cog):
             if note:
                 msg += ' ' + note
 
-            restricted_ids[member.id] = {
+            restricted_ids[str(member.id)] = {
                 'until': (time.time() + duration) if duration else None,
-                'by': ctx.message.author.id,
+                'by': str(ctx.author.id),
                 'reason': reason
             }
 
@@ -405,18 +405,18 @@ class Restrict(commands.Cog):
 
     async def schedule_unrestrict(self, delay, member, reason=None):
         """Schedules role removal, canceling and removing existing tasks if present"""
-        sid = member.guild.id
+        sid = str(member.guild.id)
 
         if sid not in self.handles:
             self.handles[sid] = {}
 
         if member.id in self.handles[sid]:
-            self.handles[sid][member.id].cancel()
+            self.handles[sid][str(member.id)].cancel()
 
         coro = self._unrestrict(member, reason)
 
         handle = self.bot.loop.call_later(delay, self.bot.loop.create_task, coro)
-        self.handles[sid][member.id] = handle
+        self.handles[sid][str(member.id)] = handle
 
     async def _unrestrict(self, member, reason=None):
         """Remove restrict role, delete record and task handle"""
@@ -434,17 +434,17 @@ class Restrict(commands.Cog):
 
     async def _unrestrict_data(self, member):
         """Removes restrict data entry and cancels any present callback"""
-        sid = member.guild.id
+        sid = str(member.guild.id)
 
         guild_group = self.config.guild(member.guild)
 
         async with guild_group.restricted_ids() as restricted_ids:
             if member.id in restricted_ids:
-                del(restricted_ids[member.id])
+                del(restricted_ids[str(member.id)])
 
             if sid in self.handles and member.id in self.handles[sid]:
-                self.handles[sid][member.id].cancel()
-                del(self.handles[sid][member.id])
+                self.handles[sid][str(member.id)].cancel()
+                del(self.handles[sid][str(member.id)])
 
     # Listeners
 
@@ -472,15 +472,15 @@ class Restrict(commands.Cog):
             if role and role in before.roles and role not in after.roles:
                 msg = 'Your restrictment in %s was ended early by a moderator/admin.' % before.guild.name
                 
-                if restricted_ids[before.id]['reason']:
-                    msg += '\nReason was: ' + restricted_ids[before.id]['reason']
+                if restricted_ids[str(before.id)]['reason']:
+                    msg += '\nReason was: ' + restricted_ids[str(before.id)]['reason']
 
                 await after.send(msg)
                 self._unrestrict_data(after)
 
     async def on_member_join(self, member):
         """Restore Restriction if restricted user leaves/rejoins"""
-        sid = member.guild.id
+        sid = str(member.guild.id)
         role = await self.get_role(member.guild)
 
         guild_group = self.config.guild(member.guild)
@@ -489,13 +489,13 @@ class Restrict(commands.Cog):
             if not role or not member.id in restricted_ids:
                 return
 
-            duration = restricted_ids[member.id]['until'] - time.time()
+            duration = restricted_ids[str(member.id)]['until'] - time.time()
             if duration > 0:
                 await member.add_roles(role)
 
                 reason = 'Restrictment re-added on rejoin. '
-                if restricted_ids[member.id]['reason']:
-                    reason += restricted_ids[member.id]['reason']
+                if restricted_ids[str(member.id)]['reason']:
+                    reason += restricted_ids[str(member.id)]['reason']
 
-                if member.id not in self.handles[sid]:
+                if str(member.id) not in self.handles[sid]:
                     self.schedule_unrestrict(duration, member, reason)
