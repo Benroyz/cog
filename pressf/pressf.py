@@ -77,7 +77,7 @@ class PressF(commands.Cog):
             return    
         if user.id not in self.messager[channel.id]:
             if str(reaction.emoji) == "\U0001f1eb": 
-                await ctx.send(f"**{user.mention}** has paid respects.")
+                await channel.send(f"**{user.mention}** has paid respects.")
                 self.messager[channel.id].append(user.id)
 
     async def on_message(self, message):
