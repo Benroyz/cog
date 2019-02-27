@@ -430,7 +430,7 @@ class Restrict:
 
             await self.bot.send_message(member, msg)
 
-    def _unrestrict_data(self, member):
+    async def _unrestrict_data(self, member):
         """Removes restrict data entry and cancels any present callback"""
         sid = member.guild.id
 
