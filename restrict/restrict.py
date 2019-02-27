@@ -1,11 +1,13 @@
 import discord
-import asyncio
-from redbot.core import commands, checks, Config
-from redbot.core.utils.chat_formatting import pagify, box
+from redbot.core import commands, checks
+from .utils.chat_formatting import pagify, box
 import logging
+from cogs.utils.dataIO import dataIO
 import os
 import time
 import re
+
+__version__ = '1.6.0'
 
 try:
     from tabulate import tabulate
@@ -15,16 +17,14 @@ except Exception as e:
 log = logging.getLogger('red.restrict')
 
 UNIT_TABLE = {'s': 1, 'm': 60, 'h': 60 * 60, 'd': 60 * 60 * 24}
-UNIT_SUF_TABLE = {
-    'sec': (1, ''),
-    'min': (60, ''),
-    'hr': (60 * 60, 's'),
-    'day': (60 * 60 * 24, 's')
-}
-
+UNIT_SUF_TABLE = {'sec': (1, ''),
+                  'min': (60, ''),
+                  'hr': (60 * 60, 's'),
+                  'day': (60 * 60 * 24, 's')
+                  }
 DEFAULT_TIMEOUT = '30m'
 PURGE_MESSAGES = 1  # for crestrict
-DEFAULT_ROLE_NAME = 'restricted'
+DEFAULT_ROLE_NAME = 'Restricted'
 
 
 class BadTimeExpr(Exception):
@@ -66,11 +66,11 @@ def _generate_timespec(sec):
     return ', '.join(timespec)
 
 
-class restrict(commands.Cog):
+class Restrict:
     "Put misbehaving users in timeout"
     def __init__(self, bot):
         self.bot = bot
-        self.config = Config.get_conf(self, identifier=(3322665 + 4))
+        self.config = Config.get_conf(self, identifier=(3322665 + 5))
         self.handles = {}
 
         bot.loop.create_task(self.on_load())
@@ -79,8 +79,6 @@ class restrict(commands.Cog):
             "role_id": None,
             "restricted_ids": {}
         }
-
-        self.config.register_guild(**default_guild)
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -98,7 +96,7 @@ class restrict(commands.Cog):
         try:
             await self.bot.purge_from(ctx.message.channel, limit=PURGE_MESSAGES + 1, check=check)
         except discord.errors.Forbidden:
-            await ctx.send("restrictment set, but I need permissions to manage messages to clean up.")
+            await self.bot.say("Restriction set, but I need permissions to manage messages to clean up.")
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -107,16 +105,15 @@ class restrict(commands.Cog):
         Time specification is any combination of number with the units s,m,h,d.
         Example: !restrict @dumbo 1.1h10m To the toll houses with you!"""
 
-        await ctx.send("attempting")
         await self._restrict_cmd_common(ctx, user, duration, reason)
-        await ctx.send("finished")
 
     @commands.command(pass_context=True, no_pm=True, name='lsrestrict')
     @checks.mod_or_permissions(manage_messages=True)
     async def list_restricted(self, ctx):
         """Shows a table of restricted users with time, mod and reason.
+
         Displays restricted users, time remaining, responsible moderator and
-        the reason for restrictment, if any."""
+        the reason for Restriction, if any."""
         guild = ctx.guild
 
         guild_group = self.config.guild(guild)
@@ -136,7 +133,7 @@ class restrict(commands.Cog):
                 else:
                     return '(member not present, id #%d)'
 
-            headers = ['Member', 'Remaining', 'restricted by', 'Reason']
+            headers = ['Member', 'Remaining', 'Restricted by', 'Reason']
             table = []
             disp_table = []
             now = time.time()
@@ -162,13 +159,25 @@ class restrict(commands.Cog):
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
+    async def rwarn(self, ctx, user: discord.Member, *, reason: str=None):
+        """Warns a user with boilerplate about the rules."""
+        msg = ['Hey %s, ' % user.mention]
+        msg.append("you're doing something that might get you muted if you keep "
+                   "doing it.")
+        if reason:
+            msg.append(" Specifically, %s." % reason)
+        msg.append("Be sure to review the server rules.")
+        await self.bot.say(' '.join(msg))
+
+    @commands.command(pass_context=True, no_pm=True)
+    @checks.mod_or_permissions(manage_messages=True)
     async def unrestrict(self, ctx, user: discord.Member):
-        """Removes restrictment from a user. Same as removing the role directly"""
+        """Removes Restriction from a user. Same as removing the role directly"""
         role = await self.get_role(user.guild)
 
         sid = user.guild.id
         if role and role in user.roles:
-            reason = 'restrictment manually ended early by %s. ' % ctx.message.author
+            reason = 'Restriction manually ended early by %s. ' % ctx.message.author
             
             guild_group = self.config.guild(user.guild)
 
@@ -223,7 +232,7 @@ class restrict(commands.Cog):
         if role and role.id != role_id:
             role_id = role.id
 
-    async def get_role(self, guild, quiet=False, create=False):
+    async def get_role(self, server, quiet=False, create=False):
         guild_group = self.config.guild(guild)
 
         role_id = await guild_group.role_id()
@@ -271,7 +280,10 @@ class restrict(commands.Cog):
             perms.send_messages = False
             perms.send_tts_messages = False
             perms.add_reactions = False
+            perms.embed_links = False
+            perms.attach_files = False
         elif isinstance(channel, discord.VoiceChannel):
+            perms.connect = False
             perms.speak = False
 
         await channel.set_permissions(role, overwrite=perms)
@@ -323,7 +335,6 @@ class restrict(commands.Cog):
                         await self.bot.add_roles(member, role)
                         if until:
                             self.schedule_unrestrict(duration, member)
-
 
     async def _restrict_cmd_common(self, ctx, member, duration, reason, quiet=False):
         guild = ctx.guild
@@ -390,9 +401,9 @@ class restrict(commands.Cog):
 
     # Functions related to unrestricting
 
-    async def schedule_unrestrict(self, delay, member, reason=None):
+    def schedule_unrestrict(self, delay, member, reason=None):
         """Schedules role removal, canceling and removing existing tasks if present"""
-        sid = member.guild.id
+        sid = member.server.id
 
         if sid not in self.handles:
             self.handles[sid] = {}
@@ -407,20 +418,19 @@ class restrict(commands.Cog):
 
     async def _unrestrict(self, member, reason=None):
         """Remove restrict role, delete record and task handle"""
-        role = await self.get_role(member.guild)
-
+        role = await self.get_role(member.server)
         if role:
             # Has to be done first to prevent triggering on_member_update listener
             self._unrestrict_data(member)
             await self.bot.remove_roles(member, role)
 
-            msg = 'Your restrictment in %s has ended.' % member.guild.name
+            msg = 'Your restriction in %s has ended.' % member.server.name
             if reason:
                 msg += "\nReason was: %s" % reason
 
             await self.bot.send_message(member, msg)
 
-    async def _unrestrict_data(self, member):
+    def _unrestrict_data(self, member):
         """Removes restrict data entry and cancels any present callback"""
         sid = member.guild.id
 
@@ -441,8 +451,7 @@ class restrict(commands.Cog):
         if channel.is_private:
             return
 
-        role = await self.get_role(channel.guild)
-        
+        role = await self.get_role(channel.server)
         if not role:
             return
 
@@ -468,7 +477,7 @@ class restrict(commands.Cog):
                 self._unrestrict_data(after)
 
     async def on_member_join(self, member):
-        """Restore restrictment if restricted user leaves/rejoins"""
+        """Restore Restriction if restricted user leaves/rejoins"""
         sid = member.guild.id
         role = await self.get_role(member.guild)
 
@@ -482,7 +491,7 @@ class restrict(commands.Cog):
             if duration > 0:
                 await self.bot.add_roles(member, role)
 
-                reason = 'restrictment re-added on rejoin. '
+                reason = 'Restrictment re-added on rejoin. '
                 if restricted_ids[member.id]['reason']:
                     reason += restricted_ids[member.id]['reason']
 
