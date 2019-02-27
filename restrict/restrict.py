@@ -374,7 +374,7 @@ class Restrict(commands.Cog):
         guild_group = self.config.guild(guild)
 
         async with guild_group.restricted_ids() as restricted_ids:
-            if str(member_id) in restricted_ids:
+            if str(member.id) in restricted_ids:
                 msg = 'User was already restricted; resetting their timer...'
             elif role in member.roles:
                 msg = 'User was restricted but had no timer, adding it now...'
