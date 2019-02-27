@@ -334,7 +334,7 @@ class Restrict(commands.Cog):
                             log.error("Needed to re-add restrict role to %s in %s, "
                                       "but couldn't." % (member, guild.name))
                             continue
-                        await member.add_roles([role.id])
+                        await member.add_roles(role)
                         if until:
                             self.schedule_unrestrict(duration, member)
 
@@ -390,7 +390,7 @@ class Restrict(commands.Cog):
                 'reason': reason
             }
 
-        await member.add_roles([role.id])
+        await member.add_roles(role.id)
 
         # schedule callback for role removal
         if duration:
@@ -491,7 +491,7 @@ class Restrict(commands.Cog):
 
             duration = restricted_ids[member.id]['until'] - time.time()
             if duration > 0:
-                await member.add_roles([role.id])
+                await member.add_roles(role.id)
 
                 reason = 'Restrictment re-added on rejoin. '
                 if restricted_ids[member.id]['reason']:
