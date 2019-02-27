@@ -80,6 +80,8 @@ class Restrict:
             "restricted_ids": {}
         }
 
+        self.config.register_guild(**default_guild)
+
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
     async def crestrict(self, ctx, user: discord.Member, duration: str=None, *, reason: str=None):
