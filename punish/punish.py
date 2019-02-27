@@ -371,7 +371,7 @@ class Punish(commands.Cog):
         guild_group = self.config.guild(guild)
 
         async with guild_group.punished_ids() as punished_ids:
-            if str(member_id) in punished_ids:
+            if str(member.id) in punished_ids:
                 msg = 'User was already punished; resetting their timer...'
             elif role in member.roles:
                 msg = 'User was punished but had no timer, adding it now...'
