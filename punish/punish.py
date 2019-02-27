@@ -115,6 +115,7 @@ class Punish(commands.Cog):
     @checks.mod_or_permissions(manage_messages=True)
     async def list_punished(self, ctx):
         """Shows a table of punished users with time, mod and reason.
+
         Displays punished users, time remaining, responsible moderator and
         the reason for punishment, if any."""
         guild = ctx.guild
@@ -244,7 +245,7 @@ class Punish(commands.Cog):
                 msg = "The %s role doesn't exist; Creating it now (please be sure to move it to the top of the roles below any staff or bots)..." % default_name
 
                 if not quiet:
-                    msgobj = await self.bot.reply(msg)
+                    msgobj = await ctx.send(msg)
 
                 log.debug('Creating punish role in %s' % guild.name)
                 perms = discord.Permissions.none()
@@ -320,7 +321,7 @@ class Punish(commands.Cog):
                             log.error("Needed to re-add punish role to %s in %s, "
                                       "but couldn't." % (member, guild.name))
                             continue
-                        await self.bot.add_roles(member, role)
+                        await member.add_roles([role.id])
                         if until:
                             self.schedule_unpunish(duration, member)
 
@@ -377,7 +378,7 @@ class Punish(commands.Cog):
                 'reason': reason
             }
 
-        await self.bot.add_roles(member, role)
+        await member.add_roles([role.id])
 
         # schedule callback for role removal
         if duration:
@@ -480,7 +481,7 @@ class Punish(commands.Cog):
 
             duration = punished_ids[member.id]['until'] - time.time()
             if duration > 0:
-                await self.bot.add_roles(member, role)
+                await member.add_roles([role.id])
 
                 reason = 'Punishment re-added on rejoin. '
                 if punished_ids[member.id]['reason']:
