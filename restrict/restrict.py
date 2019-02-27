@@ -1,8 +1,8 @@
 import discord
-from redbot.core import commands, checks
-from .utils.chat_formatting import pagify, box
+import asyncio
+from redbot.core import commands, checks, Config
+from redbot.core.utils.chat_formatting import pagify, box
 import logging
-from cogs.utils.dataIO import dataIO
 import os
 import time
 import re
@@ -430,7 +430,7 @@ class Restrict:
 
             await self.bot.send_message(member, msg)
 
-    async def _unrestrict_data(self, member):
+    def _unrestrict_data(self, member):
         """Removes restrict data entry and cancels any present callback"""
         sid = member.guild.id
 
