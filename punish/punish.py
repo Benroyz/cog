@@ -255,7 +255,7 @@ class Punish(commands.Cog):
                 msg = "The %s role doesn't exist; Creating it now (please be sure to move it to the top of the roles below any staff or bots)..." % default_name
 
                 if not quiet and channel:
-                    msgobj = await ctx.send(msg)
+                    msgobj = await channel.send(msg)
 
                 log.debug('Creating punish role in %s' % guild.name)
                 perms = discord.Permissions.none()
