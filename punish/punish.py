@@ -7,6 +7,8 @@ import os
 import time
 import re
 
+__version__ = '1.6.0'
+
 try:
     from tabulate import tabulate
 except Exception as e:
@@ -15,13 +17,11 @@ except Exception as e:
 log = logging.getLogger('red.punish')
 
 UNIT_TABLE = {'s': 1, 'm': 60, 'h': 60 * 60, 'd': 60 * 60 * 24}
-UNIT_SUF_TABLE = {
-    'sec': (1, ''),
-    'min': (60, ''),
-    'hr': (60 * 60, 's'),
-    'day': (60 * 60 * 24, 's')
-}
-
+UNIT_SUF_TABLE = {'sec': (1, ''),
+                  'min': (60, ''),
+                  'hr': (60 * 60, 's'),
+                  'day': (60 * 60 * 24, 's')
+                  }
 DEFAULT_TIMEOUT = '30m'
 PURGE_MESSAGES = 1  # for cpunish
 DEFAULT_ROLE_NAME = 'Punished'
@@ -98,7 +98,7 @@ class Punish(commands.Cog):
         try:
             await self.bot.purge_from(ctx.message.channel, limit=PURGE_MESSAGES + 1, check=check)
         except discord.errors.Forbidden:
-            await ctx.send("Punishment set, but I need permissions to manage messages to clean up.")
+            await self.bot.say("Punishment set, but I need permissions to manage messages to clean up.")
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -107,9 +107,7 @@ class Punish(commands.Cog):
         Time specification is any combination of number with the units s,m,h,d.
         Example: !punish @dumbo 1.1h10m To the toll houses with you!"""
 
-        await ctx.send("attempting")
         await self._punish_cmd_common(ctx, user, duration, reason)
-        await ctx.send("finished")
 
     @commands.command(pass_context=True, no_pm=True, name='lspunish')
     @checks.mod_or_permissions(manage_messages=True)
@@ -117,7 +115,7 @@ class Punish(commands.Cog):
         """Shows a table of punished users with time, mod and reason.
 
         Displays punished users, time remaining, responsible moderator and
-        the reason for punishment, if any."""
+        the reason for Punishment, if any."""
         guild = ctx.guild
 
         guild_group = self.config.guild(guild)
@@ -163,8 +161,20 @@ class Punish(commands.Cog):
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
+    async def rwarn(self, ctx, user: discord.Member, *, reason: str=None):
+        """Warns a user with boilerplate about the rules."""
+        msg = ['Hey %s, ' % user.mention]
+        msg.append("you're doing something that might get you muted if you keep "
+                   "doing it.")
+        if reason:
+            msg.append(" Specifically, %s." % reason)
+        msg.append("Be sure to review the guild rules.")
+        await self.bot.say(' '.join(msg))
+
+    @commands.command(pass_context=True, no_pm=True)
+    @checks.mod_or_permissions(manage_messages=True)
     async def unpunish(self, ctx, user: discord.Member):
-        """Removes punishment from a user. Same as removing the role directly"""
+        """Removes Punishment from a user. Same as removing the role directly"""
         role = await self.get_role(user.guild)
 
         sid = user.guild.id
@@ -212,7 +222,7 @@ class Punish(commands.Cog):
             perms = discord.Permissions.none()
             role = await self.bot.create_role(guild, name=default_name, permissions=perms)
         else:
-            msgobj = await ctx.send('Punish role exists... ')
+            msgobj = await ctx.send('punish role exists... ')
 
         msgobj = await msgobj.edit(content=msgobj.content + '(re)configuring channels... ')
 
@@ -245,7 +255,7 @@ class Punish(commands.Cog):
                 msg = "The %s role doesn't exist; Creating it now (please be sure to move it to the top of the roles below any staff or bots)..." % default_name
 
                 if not quiet:
-                    msgobj = await ctx.send(msg)
+                    msgobj = await self.bot.reply(msg)
 
                 log.debug('Creating punish role in %s' % guild.name)
                 perms = discord.Permissions.none()
@@ -272,7 +282,10 @@ class Punish(commands.Cog):
             perms.send_messages = False
             perms.send_tts_messages = False
             perms.add_reactions = False
+            perms.embed_links = False
+            perms.attach_files = False
         elif isinstance(channel, discord.VoiceChannel):
+            perms.connect = False
             perms.speak = False
 
         await channel.set_permissions(role, overwrite=perms)
@@ -308,14 +321,14 @@ class Punish(commands.Cog):
                 async with guild_group.punished_ids() as punished_ids:
                     if until and duration < 0:
                         if member:
-                            reason = 'Punishment removal overdue, maybe bot was offline. '
+                            reason = 'punishment removal overdue, maybe bot was offline. '
                             
-                            if punished_ids[member_id]['reason']:
-                                reason += punished_ids[member_id]['reason']
+                            if punished_ids[str(member_id)]['reason']:
+                                reason += punished_ids[str(member_id)]['reason']
                             
                             await self._unpunish(member, reason)
                         else:
-                            del(punished_ids[member_id])
+                            del(punished_ids[str(member_id)])
                     elif member and role not in member.roles:
                         if role >= me.top_role:
                             log.error("Needed to re-add punish role to %s in %s, "
@@ -325,12 +338,11 @@ class Punish(commands.Cog):
                         if until:
                             self.schedule_unpunish(duration, member)
 
-
     async def _punish_cmd_common(self, ctx, member, duration, reason, quiet=False):
         guild = ctx.guild
         note = ''
 
-        if ctx.message.author.top_role <= member.top_role:
+        if ctx.author.top_role <= member.top_role:
             await ctx.send('Permission denied.')
             return
 
@@ -362,7 +374,7 @@ class Punish(commands.Cog):
         guild_group = self.config.guild(guild)
 
         async with guild_group.punished_ids() as punished_ids:
-            if member.id in punished_ids:
+            if str(member_id) in punished_ids:
                 msg = 'User was already punished; resetting their timer...'
             elif role in member.roles:
                 msg = 'User was punished but had no timer, adding it now...'
@@ -372,9 +384,9 @@ class Punish(commands.Cog):
             if note:
                 msg += ' ' + note
 
-            punished_ids[member.id] = {
+            punished_ids[str(member.id)] = {
                 'until': (time.time() + duration) if duration else None,
-                'by': ctx.message.author.id,
+                'by': str(ctx.author.id),
                 'reason': reason
             }
 
@@ -393,29 +405,28 @@ class Punish(commands.Cog):
 
     async def schedule_unpunish(self, delay, member, reason=None):
         """Schedules role removal, canceling and removing existing tasks if present"""
-        sid = member.guild.id
+        sid = str(member.guild.id)
 
         if sid not in self.handles:
             self.handles[sid] = {}
 
         if member.id in self.handles[sid]:
-            self.handles[sid][member.id].cancel()
+            self.handles[sid][str(member.id)].cancel()
 
         coro = self._unpunish(member, reason)
 
         handle = self.bot.loop.call_later(delay, self.bot.loop.create_task, coro)
-        self.handles[sid][member.id] = handle
+        self.handles[sid][str(member.id)] = handle
 
     async def _unpunish(self, member, reason=None):
         """Remove punish role, delete record and task handle"""
         role = await self.get_role(member.guild)
-
         if role:
             # Has to be done first to prevent triggering on_member_update listener
             self._unpunish_data(member)
             await member.remove_roles(role)
 
-            msg = 'Your punishment in %s has ended.' % member.guild.name
+            msg = 'Your punishion in %s has ended.' % member.guild.name
             if reason:
                 msg += "\nReason was: %s" % reason
 
@@ -423,17 +434,17 @@ class Punish(commands.Cog):
 
     async def _unpunish_data(self, member):
         """Removes punish data entry and cancels any present callback"""
-        sid = member.guild.id
+        sid = str(member.guild.id)
 
         guild_group = self.config.guild(member.guild)
 
         async with guild_group.punished_ids() as punished_ids:
             if member.id in punished_ids:
-                del(punished_ids[member.id])
+                del(punished_ids[str(member.id)])
 
             if sid in self.handles and member.id in self.handles[sid]:
-                self.handles[sid][member.id].cancel()
-                del(self.handles[sid][member.id])
+                self.handles[sid][str(member.id)].cancel()
+                del(self.handles[sid][str(member.id)])
 
     # Listeners
 
@@ -443,7 +454,6 @@ class Punish(commands.Cog):
             return
 
         role = await self.get_role(channel.guild)
-        
         if not role:
             return
 
@@ -462,15 +472,15 @@ class Punish(commands.Cog):
             if role and role in before.roles and role not in after.roles:
                 msg = 'Your punishment in %s was ended early by a moderator/admin.' % before.guild.name
                 
-                if punished_ids[before.id]['reason']:
-                    msg += '\nReason was: ' + punished_ids[before.id]['reason']
+                if punished_ids[str(before.id)]['reason']:
+                    msg += '\nReason was: ' + punished_ids[str(before.id)]['reason']
 
                 await after.send(msg)
                 self._unpunish_data(after)
 
     async def on_member_join(self, member):
-        """Restore punishment if punished user leaves/rejoins"""
-        sid = member.guild.id
+        """Restore Punishment if punished user leaves/rejoins"""
+        sid = str(member.guild.id)
         role = await self.get_role(member.guild)
 
         guild_group = self.config.guild(member.guild)
@@ -479,13 +489,13 @@ class Punish(commands.Cog):
             if not role or not member.id in punished_ids:
                 return
 
-            duration = punished_ids[member.id]['until'] - time.time()
+            duration = punished_ids[str(member.id)]['until'] - time.time()
             if duration > 0:
                 await member.add_roles(role)
 
                 reason = 'Punishment re-added on rejoin. '
-                if punished_ids[member.id]['reason']:
-                    reason += punished_ids[member.id]['reason']
+                if punished_ids[str(member.id)]['reason']:
+                    reason += punished_ids[str(member.id)]['reason']
 
-                if member.id not in self.handles[sid]:
+                if str(member.id) not in self.handles[sid]:
                     self.schedule_unpunish(duration, member, reason)
