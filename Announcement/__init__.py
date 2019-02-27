@@ -1,4 +1,4 @@
-from announcement.announce import Announcement
+from Announcement.announce import announcement
 
 
 async def setup(bot):
