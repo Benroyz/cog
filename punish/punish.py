@@ -282,10 +282,7 @@ class Punish(commands.Cog):
             perms.send_messages = False
             perms.send_tts_messages = False
             perms.add_reactions = False
-            perms.embed_links = False
-            perms.attach_files = False
         elif isinstance(channel, discord.VoiceChannel):
-            perms.connect = False
             perms.speak = False
 
         await channel.set_permissions(role, overwrite=perms)
