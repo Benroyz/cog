@@ -168,7 +168,7 @@ class Restrict(commands.Cog):
                    "doing it.")
         if reason:
             msg.append(" Specifically, %s." % reason)
-        msg.append("Be sure to review the server rules.")
+        msg.append("Be sure to review the guild rules.")
         await self.bot.say(' '.join(msg))
 
     @commands.command(pass_context=True, no_pm=True)
@@ -234,7 +234,7 @@ class Restrict(commands.Cog):
         if role and role.id != role_id:
             role_id = role.id
 
-    async def get_role(self, server, quiet=False, create=False):
+    async def get_role(self, guild, quiet=False, create=False):
         guild_group = self.config.guild(guild)
 
         role_id = await guild_group.role_id()
@@ -403,9 +403,9 @@ class Restrict(commands.Cog):
 
     # Functions related to unrestricting
 
-    def schedule_unrestrict(self, delay, member, reason=None):
+    async def schedule_unrestrict(self, delay, member, reason=None):
         """Schedules role removal, canceling and removing existing tasks if present"""
-        sid = member.server.id
+        sid = member.guild.id
 
         if sid not in self.handles:
             self.handles[sid] = {}
@@ -420,19 +420,19 @@ class Restrict(commands.Cog):
 
     async def _unrestrict(self, member, reason=None):
         """Remove restrict role, delete record and task handle"""
-        role = await self.get_role(member.server)
+        role = await self.get_role(member.guild)
         if role:
             # Has to be done first to prevent triggering on_member_update listener
             self._unrestrict_data(member)
             await self.bot.remove_roles(member, role)
 
-            msg = 'Your restriction in %s has ended.' % member.server.name
+            msg = 'Your restriction in %s has ended.' % member.guild.name
             if reason:
                 msg += "\nReason was: %s" % reason
 
             await self.bot.send_message(member, msg)
 
-    def _unrestrict_data(self, member):
+    async def _unrestrict_data(self, member):
         """Removes restrict data entry and cancels any present callback"""
         sid = member.guild.id
 
@@ -453,7 +453,7 @@ class Restrict(commands.Cog):
         if channel.is_private:
             return
 
-        role = await self.get_role(channel.server)
+        role = await self.get_role(channel.guild)
         if not role:
             return
 
