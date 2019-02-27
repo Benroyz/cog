@@ -39,7 +39,7 @@ class PressF(commands.Cog):
         message = await ctx.send(msg)
 
         try:
-            await self.bot.add_reaction(message, "\U0001f1eb")
+            await message.add_reaction("\U0001f1eb")
             self.messager[channel.id] = []
             react = True
         except:
