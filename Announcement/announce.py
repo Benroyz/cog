@@ -314,13 +314,13 @@ def truncate(s, l):
     return (s[:75] + '...') if len(s) > l else s
 
 
-class announceScreen(commands.Cog):
+class announce(commands.Cog):
     """My custom cog that does stuff!"""
 
     def __init__(self, bot):
         super().__init__()
         self.bot = bot
-        self.file_path = 'data/announcescreen/screens.json'
+        self.file_path = 'data/announce/screens.json'
         self.config = Config.get_conf(self, identifier=1170348762)
         self.config.register_global(screens={})
         self.screens = {}
