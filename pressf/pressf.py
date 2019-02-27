@@ -60,7 +60,8 @@ class PressF(commands.Cog):
         else:
             amount = len(self.messagem[channel.id])
 
-        await ctx.send(channel, "**{}** {} paid respects to **{}**.".format(amount, "person has" if str(amount) == "1" else "people have", answer))
+        amount_of_people = "person has" if str(amount) == "1" else "people have"
+        await channel.send(f"**{amount}** {amount_of_people} paid respects to **{answer}**.")
         
         if react:
             del self.messager[channel.id]
