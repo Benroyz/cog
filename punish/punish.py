@@ -234,7 +234,7 @@ class Punish(commands.Cog):
         if role and role.id != role_id:
             role_id = role.id
 
-    async def get_role(self, channel=None, guild, quiet=False, create=False):
+    async def get_role(self, guild, channel=None, quiet=False, create=False):
         guild_group = self.config.guild(guild)
 
         role_id = await guild_group.role_id()
@@ -359,7 +359,7 @@ class Punish(commands.Cog):
                 await ctx.send("Error parsing duration: %s." % e.args)
                 return False
 
-        role = await self.get_role(channel=ctx.channel, guild, quiet=quiet, create=True)
+        role = await self.get_role(guild, channel=ctx.channel, quiet=quiet, create=True)
         if role is None:
             await ctx.send("There is not a punished role.")
             return
