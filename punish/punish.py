@@ -98,7 +98,7 @@ class Punish(commands.Cog):
         try:
             await self.bot.purge_from(ctx.message.channel, limit=PURGE_MESSAGES + 1, check=check)
         except discord.errors.Forbidden:
-            await self.bot.say("Punishment set, but I need permissions to manage messages to clean up.")
+            await ctx.send("Punishment set, but I need permissions to manage messages to clean up.")
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -169,7 +169,7 @@ class Punish(commands.Cog):
         if reason:
             msg.append(" Specifically, %s." % reason)
         msg.append("Be sure to review the guild rules.")
-        await self.bot.say(' '.join(msg))
+        await ctx.send(' '.join(msg))
 
     @commands.command(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -255,7 +255,7 @@ class Punish(commands.Cog):
                 msg = "The %s role doesn't exist; Creating it now (please be sure to move it to the top of the roles below any staff or bots)..." % default_name
 
                 if not quiet:
-                    msgobj = await self.bot.reply(msg)
+                    msgobj = await ctx.send(msg)
 
                 log.debug('Creating punish role in %s' % guild.name)
                 perms = discord.Permissions.none()
