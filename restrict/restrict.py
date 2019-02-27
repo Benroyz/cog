@@ -262,7 +262,7 @@ class Restrict(commands.Cog):
                 role = await guild.create_role(name=default_name, permissions=perms)
 
                 if not quiet and channel:
-                    msgobj = await msgobj.edit(content=msgobj.content + 'configuring channels... ')
+                    await msgobj.edit(content=msgobj.content + 'configuring channels... ')
 
                 for channel in guild.channels:
                     await self.setup_channel(channel, role)
