@@ -390,7 +390,7 @@ class Restrict(commands.Cog):
                 'reason': reason
             }
 
-        await member.add_roles(role.id)
+        await member.add_roles(role)
 
         # schedule callback for role removal
         if duration:
@@ -491,7 +491,7 @@ class Restrict(commands.Cog):
 
             duration = restricted_ids[member.id]['until'] - time.time()
             if duration > 0:
-                await member.add_roles(role.id)
+                await member.add_roles(role)
 
                 reason = 'Restrictment re-added on rejoin. '
                 if restricted_ids[member.id]['reason']:
