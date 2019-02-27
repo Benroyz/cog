@@ -184,8 +184,8 @@ class Restrict(commands.Cog):
             guild_group = self.config.guild(user.guild)
 
             async with guild_group.restricted_ids() as restricted_ids:
-                if restricted_ids[user.id]['reason']:
-                    reason += restricted_ids[user.id]['reason']
+                if restricted_ids[str(user.id)]['reason']:
+                    reason += restricted_ids[str(user.id)]['reason']
             
             await self._unrestrict(user, reason)
             await ctx.send('Done.')
