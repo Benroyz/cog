@@ -220,7 +220,7 @@ class Restrict(commands.Cog):
             msgobj = await ctx.send(msg)
 
             perms = discord.Permissions.none()
-            role = await self.bot.create_role(guild, name=default_name, permissions=perms)
+            role = await guild.create_role(name=default_name, permissions=perms)
         else:
             msgobj = await ctx.send('restrict role exists... ')
 
@@ -259,7 +259,7 @@ class Restrict(commands.Cog):
 
                 log.debug('Creating restrict role in %s' % guild.name)
                 perms = discord.Permissions.none()
-                role = await self.bot.create_role(guild, name=default_name, permissions=perms)
+                role = await guild.create_role(name=default_name, permissions=perms)
 
                 if not quiet:
                     msgobj = await msgobj.edit(content=msgobj.content + 'configuring channels... ')
