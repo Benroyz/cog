@@ -1,7 +1,7 @@
-from announcescreen.announce import announceScreen
+from announcement.announce import Announcement
 
 
 async def setup(bot):
-    c = announceScreen(bot)
+    c = Announcement(bot)
     await c.init()
     bot.add_cog(c)
