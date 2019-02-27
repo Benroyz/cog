@@ -234,7 +234,7 @@ class Restrict(commands.Cog):
         if role and role.id != role_id:
             role_id = role.id
 
-    async def get_role(self, guild, quiet=False, create=False):
+    async def get_role(self, channel=None, guild, quiet=False, create=False):
         guild_group = self.config.guild(guild)
 
         role_id = await guild_group.role_id()
@@ -248,26 +248,26 @@ class Restrict(commands.Cog):
         if create and not role:
             perms = guild.me.guild_permissions
                 
-            if not perms.manage_roles and perms.manage_channels:
+            if not perms.manage_roles and perms.manage_channels and channel:
                 await ctx.send("The Manage Roles and Manage Channels permissions are required to use this command.")
                 return None
             else:
                 msg = "The %s role doesn't exist; Creating it now (please be sure to move it to the top of the roles below any staff or bots)..." % default_name
 
-                if not quiet:
+                if not quiet and channel:
                     msgobj = await ctx.send(msg)
 
                 log.debug('Creating restrict role in %s' % guild.name)
                 perms = discord.Permissions.none()
                 role = await guild.create_role(name=default_name, permissions=perms)
 
-                if not quiet:
+                if not quiet and channel:
                     msgobj = await msgobj.edit(content=msgobj.content + 'configuring channels... ')
 
                 for channel in guild.channels:
                     await self.setup_channel(channel, role)
 
-                if not quiet:
+                if not quiet and channel:
                     await msgobj.edit(content=msgobj.content + 'done.')
 
         if role and role.id != role_id:
@@ -362,7 +362,7 @@ class Restrict(commands.Cog):
                 await ctx.send("Error parsing duration: %s." % e.args)
                 return False
 
-        role = await self.get_role(guild, quiet=quiet, create=True)
+        role = await self.get_role(channel=ctx.channel, guild, quiet=quiet, create=True)
         if role is None:
             await ctx.send("There is not a restricted role.")
             return
