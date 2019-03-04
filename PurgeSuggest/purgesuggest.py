@@ -109,20 +109,18 @@ class SuggestpurgeBox(commands.Cog):
 
         async with group.blocked_ids() as blocked_ids:
             if author.id in self.usercache:
-                return await ctx.send("Finish making your prior suggestpurgeion "
+                return await ctx.send("Finish making your prior suggestion "
                                           "before making an additional one")
 
             if author.id in blocked_ids:
-                return await ctx.send("You are blocked from making suggestpurgeions.")
+                return await ctx.send("You are blocked from making suggestion.")
 
-            await ctx.send("I will message you to collect your suggestpurgeion.")
+            await ctx.send("I will message you to collect your suggestion.")
                     
             self.usercache.append(author.id)
                     
-            dm = await author.send("Please respond to this message with your suggestpurgeion.\nYour "
-                                   "suggestpurgeion should be a single message (one image allowed). "
-                                   "If you are suggestpurgeing an emote and it is common on many other servers, " 
-                                   "global servers, or personal, it will most likely not be accepted.")
+            dm = await author.send("Please respond to this message with your server suggestion.\nYour "
+                                   "suggestion should be a single message (one image allowed).")
         
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
@@ -135,7 +133,7 @@ class SuggestpurgeBox(commands.Cog):
                 self.usercache.remove(author.id)
             else:
                 await self.send_suggestpurge(message, guild)
-                await author.send("Your suggestpurgeion was submitted.")
+                await author.send("Your suggestion was submitted.")
 
     async def send_suggestpurge(self, message, guild):
         author = guild.get_member(message.author.id)
