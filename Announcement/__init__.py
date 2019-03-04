@@ -1,4 +1,4 @@
-from .announcement import Announcement
+from .announce import announce
 
 def setup(bot):
-    bot.add_cog(Announcement(bot))
+    bot.add_cog(announce(bot))
