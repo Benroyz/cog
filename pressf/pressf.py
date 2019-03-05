@@ -18,7 +18,7 @@ class PressF(commands.Cog):
 
         self.config.register_guild(**default_guild)
 
-    @commands.group(name="block", pass_context=True, no_pm=True)
+    @commands.group(name="setpressf", pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_guild=True)
     async def block(self, ctx):
         """configuration settings"""
@@ -26,8 +26,8 @@ class PressF(commands.Cog):
         pass
 
     
-    @block.command(name="add", pass_context=True, no_pm=True)
-    async def block(self, ctx, user: discord.Member):
+    @setpressf.command(name="add", pass_context=True, no_pm=True)
+    async def setpressf(self, ctx, user: discord.Member):
         """Blocks a user from making suggestions."""
         guild = ctx.guild
         group = self.config.guild(guild)
@@ -39,8 +39,8 @@ class PressF(commands.Cog):
                 blocked_ids.append(user.id)
                 await ctx.send("User blocked.")
 
-    @block.command(name="remove", pass_context=True, no_pm=True)
-    async def block(self, ctx, user: discord.Member):
+    @setpressf.command(name="remove", pass_context=True, no_pm=True)
+    async def setpressf(self, ctx, user: discord.Member):
         """Unblocks a user from making suggestions."""
         guild = ctx.guild
         group = self.config.guild(guild)
