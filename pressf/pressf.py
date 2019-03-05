@@ -20,7 +20,7 @@ class PressF(commands.Cog):
 
     @commands.group(name="setpressf", pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_guild=True)
-    async def block(self, ctx):
+    async def setpressf(self, ctx):
         """configuration settings"""
 
         pass
