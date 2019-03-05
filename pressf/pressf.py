@@ -106,7 +106,7 @@ class PressF(commands.Cog):
         pass
 
     
-     @block.command(name="add", pass_context=True, no_pm=True)
+     @commands.command(name="add", pass_context=True, no_pm=True)
     async def block(self, ctx, user: discord.Member):
         """Blocks a user from using pressf."""
         guild = ctx.guild
