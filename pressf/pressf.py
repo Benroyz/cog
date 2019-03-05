@@ -98,9 +98,9 @@ class PressF(commands.Cog):
                 await ctx.send("**{user.mention}** has paid respects.")
                 self.messagem[channel.id].append(user.id)
                 
-    @commands.group(name="setsuggest", pass_context=True, no_pm=True)
+    @commands.group(name="block", pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_guild=True)
-    async def setsuggest(self, ctx):
+    async def block(self, ctx):
         """configuration settings"""
 
         pass
