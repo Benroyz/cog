@@ -52,7 +52,6 @@ class PressF(commands.Cog):
                 blocked_ids.remove(user.id)
                 await ctx.send("User unblocked.")
 
-                
     @commands.command(pass_context=True, no_pm=True)
     async def pressf(self, ctx, user: discord.User=None):
         """Pay Respects by pressing f"""
