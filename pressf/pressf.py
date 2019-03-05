@@ -19,35 +19,35 @@ class PressF(commands.Cog):
         self.config.register_guild(**default_guild)
 
     @commands.group(name="setpressf", pass_context=True, no_pm=True)
-    @checks.admin_or_permissions(manage_guild=True)
+    @checks.admin_or_permissions(kick_members=True)
     async def setpressf(self, ctx):
         """configuration settings"""
 
         pass
 
     
-    @setpressf.command(name="add", pass_context=True, no_pm=True)
-    async def _setpressf_add(self, ctx, user: discord.Member):
-        """Blocks a user from making suggestions."""
+    @setpressf.command(name="block", pass_context=True, no_pm=True)
+    async def _setpressf_block(self, ctx, user: discord.Member):
+        """Blocks a user from using pressf."""
         guild = ctx.guild
         group = self.config.guild(guild)
 
         async with group.blocked_ids() as blocked_ids:
             if user.id in blocked_ids:
-                await ctx.send("This user is already in the block list, did you mean to `--block remove`?")
+                await ctx.send("This user is already in the block list, did you mean to `--setpressf remove`?")
             else:
                 blocked_ids.append(user.id)
                 await ctx.send("User blocked.")
 
-    @setpressf.command(name="remove", pass_context=True, no_pm=True)
-    async def _setpressf_remove(self, ctx, user: discord.Member):
-        """Unblocks a user from making suggestions."""
+    @setpressf.command(name="block", pass_context=True, no_pm=True)
+    async def _setpressf_unblock(self, ctx, user: discord.Member):
+        """Unblocks a user from using pressf."""
         guild = ctx.guild
         group = self.config.guild(guild)
 
         async with group.blocked_ids() as blocked_ids:
             if user.id not in blocked_ids:
-                await ctx.send("This user isn't in the block list, did you mean to `--block add`?")
+                await ctx.send("This user isn't in the block list, did you mean to `--setpressf add`?")
             else:
                 blocked_ids.remove(user.id)
                 await ctx.send("User unblocked.")
