@@ -26,8 +26,8 @@ class PressF(commands.Cog):
         pass
 
     
-    @setpressf.command(name="block", pass_context=True, no_pm=True)
-    async def _setpressf_block(self, ctx, user: discord.Member):
+    @setpressf.command(name="add", pass_context=True, no_pm=True)
+    async def _setpressf_add(self, ctx, user: discord.Member):
         """Blocks a user from using pressf."""
         guild = ctx.guild
         group = self.config.guild(guild)
@@ -39,8 +39,8 @@ class PressF(commands.Cog):
                 blocked_ids.append(user.id)
                 await ctx.send("User blocked.")
 
-    @setpressf.command(name="block", pass_context=True, no_pm=True)
-    async def _setpressf_unblock(self, ctx, user: discord.Member):
+    @setpressf.command(name="remove", pass_context=True, no_pm=True)
+    async def _setpressf_remove(self, ctx, user: discord.Member):
         """Unblocks a user from using pressf."""
         guild = ctx.guild
         group = self.config.guild(guild)
