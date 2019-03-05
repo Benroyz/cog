@@ -3,7 +3,7 @@ import asyncio  # noqa: F401
 from redbot.core import commands, checks, Config
 
 class PressF(commands.Cog):
-    """You can now pay repect to a person"""
+    """You can now pay respect to a person"""
 
     def __init__(self, bot):
         self.bot = bot
