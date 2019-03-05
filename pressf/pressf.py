@@ -98,6 +98,14 @@ class PressF(commands.Cog):
                 await ctx.send("**{user.mention}** has paid respects.")
                 self.messagem[channel.id].append(user.id)
                 
+    @commands.group(name="setsuggest", pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(manage_guild=True)
+    async def setsuggest(self, ctx):
+        """configuration settings"""
+
+        pass
+
+    
      @block.command(name="add", pass_context=True, no_pm=True)
     async def block(self, ctx, user: discord.Member):
         """Blocks a user from using pressf."""
