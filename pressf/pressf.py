@@ -9,6 +9,12 @@ class PressF(commands.Cog):
         self.bot = bot
         self.messager = {}
         self.messagem = {}
+        
+        
+    default_guild = {
+            "blocked_ids": []
+        }
+        
 
     @commands.command(pass_context=True, no_pm=True)
     async def pressf(self, ctx, user: discord.User=None):
@@ -91,3 +97,16 @@ class PressF(commands.Cog):
             if message.content.lower() == "f":
                 await ctx.send("**{user.mention}** has paid respects.")
                 self.messagem[channel.id].append(user.id)
+                
+     @block.command(name="add", pass_context=True, no_pm=True)
+    async def block(self, ctx, user: discord.Member):
+        """Blocks a user from using pressf."""
+        guild = ctx.guild
+        group = self.config.guild(guild)
+
+        async with group.blocked_ids() as blocked_ids:
+            if user.id in blocked_ids:
+                await ctx.send("This user is already in the block list, did you mean to `--setsuggest unblock`?")
+            else:
+                blocked_ids.append(user.id)
+                await ctx.send("User blocked.")
