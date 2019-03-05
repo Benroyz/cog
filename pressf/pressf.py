@@ -7,15 +7,52 @@ class PressF(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.config = Config.get_conf(self, identifier=(3322665 + 1))
+        self.usercache = []
         self.messager = {}
         self.messagem = {}
         
-        
-    default_guild = {
+        default_guild = {
             "blocked_ids": []
         }
-        
 
+        self.config.register_guild(**default_guild)
+
+    @commands.group(name="block", pass_context=True, no_pm=True)
+    @checks.admin_or_permissions(manage_guild=True)
+    async def block(self, ctx):
+        """configuration settings"""
+
+        pass
+
+    
+    @block.command(name="add", pass_context=True, no_pm=True)
+    async def block(self, ctx, user: discord.Member):
+        """Blocks a user from making suggestions."""
+        guild = ctx.guild
+        group = self.config.guild(guild)
+
+        async with group.blocked_ids() as blocked_ids:
+            if user.id in blocked_ids:
+                await ctx.send("This user is already in the block list, did you mean to `--block remove`?")
+            else:
+                blocked_ids.append(user.id)
+                await ctx.send("User blocked.")
+
+    @block.command(name="remove", pass_context=True, no_pm=True)
+    async def block(self, ctx, user: discord.Member):
+        """Unblocks a user from making suggestions."""
+        guild = ctx.guild
+        group = self.config.guild(guild)
+
+        async with group.blocked_ids() as blocked_ids:
+            if user.id not in blocked_ids:
+                await ctx.send("This user isn't in the block list, did you mean to `--block add`?")
+            else:
+                blocked_ids.remove(user.id)
+                await ctx.send("User unblocked.")
+
+                
     @commands.command(pass_context=True, no_pm=True)
     async def pressf(self, ctx, user: discord.User=None):
         """Pay Respects by pressing f"""
@@ -98,23 +135,3 @@ class PressF(commands.Cog):
                 await ctx.send("**{user.mention}** has paid respects.")
                 self.messagem[channel.id].append(user.id)
                 
-    @commands.group(name="block", pass_context=True, no_pm=True)
-    @checks.admin_or_permissions(manage_guild=True)
-    async def block(self, ctx):
-        """configuration settings"""
-
-        pass
-
-    
-     @commands.command(name="add", pass_context=True, no_pm=True)
-    async def block(self, ctx, user: discord.Member):
-        """Blocks a user from using pressf."""
-        guild = ctx.guild
-        group = self.config.guild(guild)
-
-        async with group.blocked_ids() as blocked_ids:
-            if user.id in blocked_ids:
-                await ctx.send("This user is already in the block list, did you mean to `--setsuggest unblock`?")
-            else:
-                blocked_ids.append(user.id)
-                await ctx.send("User blocked.")
