@@ -1,5 +1,5 @@
 import discord
-from redbot.core import commands
+from redbot.core import commands, checks, Config
 import asyncio
 
 class PressF(commands.Cog):
