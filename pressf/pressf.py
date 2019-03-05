@@ -1,6 +1,6 @@
 import discord
+import asyncio  # noqa: F401
 from redbot.core import commands, checks, Config
-import asyncio
 
 class PressF(commands.Cog):
     """You can now pay repect to a person"""
