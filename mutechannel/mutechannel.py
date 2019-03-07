@@ -19,7 +19,7 @@ class mutechannel(commands.Cog):
                                                                    send_messages=False)
         todelete = await ctx.send("Done :+1:")
         await asyncio.sleep(5)
-        await self.bot.delete_message(todelete)
+        await message.delete(todelete)
 
     @checks.admin_or_permissions(manage_channels=True)
     @commands.command(pass_context = True)
@@ -30,4 +30,4 @@ class mutechannel(commands.Cog):
                                                                    send_messages=True)
         todelete = await ctx.send("Done :+1:")
         await asyncio.sleep(5)
-        await self.bot.delete_message(todelete)
+        await message.delete(todelete)
