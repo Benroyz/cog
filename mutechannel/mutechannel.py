@@ -17,7 +17,7 @@ class mutechannel(commands.Cog):
         perms.send_messages = False
         await ctx.message.channel.set_permissions(ctx.message.author, read_messages=True,
                                                                    send_messages=False)
-        todelete = await self.context.send("Done :+1:")
+        todelete = await ctx.send("Done :+1:")
         await asyncio.sleep(5)
         await self.bot.delete_message(todelete)
 
@@ -28,6 +28,6 @@ class mutechannel(commands.Cog):
         perms.send_messages = True
         await ctx.message.channel.set_permissions(ctx.message.author, read_messages=True,
                                                                    send_messages=True)
-        todelete = await self.context.send("Done :+1:")
+        todelete = await ctx.send("Done :+1:")
         await asyncio.sleep(5)
         await self.bot.delete_message(todelete)
