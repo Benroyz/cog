@@ -1,4 +1,4 @@
-from .mutechannel import MuteChannel
+from .mutechannel import mutechannel
 
 def setup(bot):
-    bot.add_cog(MuteChannel(bot))
+    bot.add_cog(mutechannel(bot))
