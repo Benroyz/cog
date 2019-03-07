@@ -10,7 +10,7 @@ class mutechannel(commands.Cog):
         self.messager = {}
         self.messagem = {}
 
-    @checks.admin_or_permissions(manage_channels=True)
+    @checks.admin_or_permissions(manage_messages=True)
     @commands.command(pass_context = True)
     async def mutechannel(self, ctx):
         perms = discord.PermissionOverwrite()
@@ -21,7 +21,7 @@ class mutechannel(commands.Cog):
         await asyncio.sleep(5)
         await ctx.message.delete()
 
-    @checks.admin_or_permissions(manage_channels=True)
+    @checks.admin_or_permissions(manage_messages=True)
     @commands.command(pass_context = True)
     async def unmutechannel(self, ctx):
         perms = discord.PermissionOverwrite()
