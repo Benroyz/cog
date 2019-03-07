@@ -15,7 +15,8 @@ class mutechannel(commands.Cog):
     async def mutechannel(self, ctx):
         perms = discord.PermissionOverwrite()
         perms.send_messages = False
-        await ctx.message.channel.set_permissions(ctx.message.channel, ctx.message.server.default_role ,perms)
+        await ctx.message.channel.set_permissions(message.guild.roles, read_messages=True,
+                                                                  send_messages=False)
         todelete = await ctx.send("Done :+1:")
         await asyncio.sleep(5)
         await ctx.message.delete()
@@ -25,7 +26,8 @@ class mutechannel(commands.Cog):
     async def unmutechannel(self, ctx):
         perms = discord.PermissionOverwrite()
         perms.send_messages = True
-        await ctx.message.channel.set_permissions(ctx.message.channel, ctx.message.server.default_role ,perms)
+        await ctx.message.channel.set_permissions(ctx.guild.roles, read_messages=True,
+                                                                  send_messages=True)
         todelete = await ctx.send("Done :+1:")
         await asyncio.sleep(5)
         await ctx.message.delete()
