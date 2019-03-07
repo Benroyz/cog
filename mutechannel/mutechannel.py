@@ -4,6 +4,11 @@ from redbot.core import commands, checks
 
 class mutechannel(commands.Cog):
     """Channel mute"""
+    
+    def __init__(self, bot):
+        self.bot = bot
+        self.messager = {}
+        self.messagem = {}
 
     @checks.admin_or_permissions(manage_channels=True)
     @commands.command(pass_context = True)
