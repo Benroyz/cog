@@ -2,7 +2,7 @@ import asyncio
 import discord
 from redbot.core import commands, checks
 
-class ChannelMute(commands.Cog):
+class MuteChannel(commands.Cog):
     """Channel mute"""
 
     @checks.admin_or_permissions(manage_channels=True)
