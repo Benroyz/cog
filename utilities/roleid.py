@@ -12,7 +12,7 @@ class RoleID(commands.Cog):
     @commands.command(pass_context=True, no_pm=True)
     async def roleid(ctx, self, role: str=None):
         if role:
-            role_obj = [x for x in ctx.send.guild.roles if x.name == role]
+            role_obj = [x for x in ctx if x.name == role]
 
             if len(role_obj) > 0:
                 await self.ctx.send("**ID of {0}**: {1}".format(role, role_obj[0].id))
