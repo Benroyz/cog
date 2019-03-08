@@ -11,10 +11,10 @@ class RoleID(commands.Cog):
 
     @commands.command(pass_context=True, no_pm=True)
     async def roleid(self, ctx, role: str=None):
-    if role:
-        role_obj = [x for x in ctx.message.server.roles if x.name == role]
+        if role:
+            role_obj = [x for x in ctx.message.server.roles if x.name == role]
 
-        if len(role_obj) > 0:
-            await self.ctx.say("**ID of {0}**: {1}".format(role, role_obj[0].id))
-        else:
-            await self.ctx.say("{0} is not a valid role.".format(role))
+            if len(role_obj) > 0:
+                await self.ctx..say("**ID of {0}**: {1}".format(role, role_obj[0].id))
+            else:
+                await self.ctx..say("{0} is not a valid role.".format(role))
