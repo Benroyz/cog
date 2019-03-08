@@ -1,7 +1,7 @@
 from redbot.core import commands, checks
 import discord
 
-class RoleID(commands.Cog):
+class roleid(commands.Cog):
     """Role ID."""
 
     def __init__(self, bot):
