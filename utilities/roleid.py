@@ -15,6 +15,6 @@ class RoleID(commands.Cog):
             role_obj = [x for x in ctx.message.server.roles if x.name == role]
 
             if len(role_obj) > 0:
-                await self.ctx..say("**ID of {0}**: {1}".format(role, role_obj[0].id))
+                await self.ctx.say("**ID of {0}**: {1}".format(role, role_obj[0].id))
             else:
-                await self.ctx..say("{0} is not a valid role.".format(role))
+                await self.ctx.say("{0} is not a valid role.".format(role))
