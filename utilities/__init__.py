@@ -1,4 +1,4 @@
-from .roleid import roleid
+from .roleid import RoleID
 
 def setup(bot):
-    bot.add_cog(roleid(bot))
+    bot.add_cog(RoleID(bot))
