@@ -10,7 +10,7 @@ class RoleID(commands.Cog):
         self.messagem = {}
 
     @commands.command(pass_context=True, no_pm=True)
-async def roleid(self, ctx, role: str=None):
+    async def roleid(self, ctx, role: str=None):
     if role:
         role_obj = [x for x in ctx.message.server.roles if x.name == role]
 
