@@ -9,7 +9,7 @@ class RoleID(commands.Cog):
         self.messager = {}
         self.messagem = {}
 
-    @checks.admin_or_permission(manage_messages=True)
+    @checks.admin_or_permissions(manage_messages=True)
     @commands.command(pass_context=True, no_pm=True)
     async def roleid(self, ctx, role: str=None):
         if role:
