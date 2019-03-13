@@ -362,8 +362,7 @@ class announce(commands.Cog):
         if screen is None or screen.is_empty():
             await ctx.send('The announce screen is empty.')
         else:
-	channel = client.get_channel(497540552032649216)
-        await screen.send(self.bot, ctx.message.channel)
+            await screen.send(self.bot, ctx.message.channel)
 
     @commands.command(no_pm=True)
     @checks.admin()
