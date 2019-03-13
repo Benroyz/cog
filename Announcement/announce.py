@@ -363,7 +363,7 @@ class announce(commands.Cog):
             await ctx.send('The announce screen is empty.')
         else:
             await screen.send(self.bot, ctx.message.channel)
-			channel=bot.get_channel(497540552032649216)
+			channel=bot.get_channel('497540552032649216')
 			await channel.send(msg)
 
     @commands.command(no_pm=True)
