@@ -279,14 +279,14 @@ class Restrict(commands.Cog):
         perms = discord.PermissionOverwrite()
 
         if isinstance(channel, discord.TextChannel):
-            perms.send_messages = False
+            perms.send_messages = True
             perms.send_tts_messages = False
             perms.add_reactions = False
             perms.embed_links = False
             perms.attach_files = False
         elif isinstance(channel, discord.VoiceChannel):
-            perms.connect = False
-            perms.speak = False
+            perms.connect = True
+            perms.speak = True
 
         await channel.set_permissions(role, overwrite=perms)
 
