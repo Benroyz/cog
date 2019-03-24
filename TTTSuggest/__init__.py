@@ -1,4 +1,4 @@
 from .tttsuggest import TTTSuggest
 
 def setup(bot):
-    bot.add_cog(tttsuggest(bot))
+    bot.add_cog(TTTSuggest(bot))
