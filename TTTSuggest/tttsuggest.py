@@ -119,8 +119,7 @@ class TTTSuggest(commands.Cog):
                     
             self.usercache.append(author.id)
                     
-            dm = await author.send("Please respond to this message with your server suggestion.\nYour "
-                                   "suggestion should be a single message (one image allowed).")
+            dm = await author.send("Please respond to this message with your server suggestion. Bug Reports encouraged!"
         
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
