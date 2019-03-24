@@ -5,8 +5,8 @@ import discord
 from redbot.core import commands, checks, Config
 
 
-class tttsuggest(commands.Cog):
-    """custom cog for a configurable tttsuggestion box"""
+class TTTSuggest(commands.Cog):
+    """custom cog for a configurable suggestalphaion box"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -23,86 +23,86 @@ class tttsuggest(commands.Cog):
 
         self.config.register_guild(**default_guild)
 
-    @commands.group(name="set-tttsuggest", pass_context=True, no_pm=True)
+    @commands.group(name="setsuggestalpha", pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_guild=True)
-    async def set-tttsuggest(self, ctx):
+    async def setsuggestalpha(self, ctx):
         """configuration settings"""
 
         pass
 
     
-    @set-tttsuggest.command(name="on", pass_context=True, no_pm=True)
-    async def _set-tttsuggest_on(self, ctx):
-        """Turn on TTT Suggestion box in the current channel"""
+    @setsuggestalpha.command(name="on", pass_context=True, no_pm=True)
+    async def _setsuggestalpha_on(self, ctx):
+        """Turn on suggestalphaionBox in the current channel"""
         guild_group = self.config.guild(ctx.guild)
 
         async with guild_group.channels_enabled() as channels_enabled:
             channel = ctx.message.channel
             if channel.id in channels_enabled:
-                await ctx.send("TTT Suggestion box is already on in this channel.")
+                await ctx.send("suggestalphaionBox is already on in this channel.")
             else:
                 channels_enabled.append(channel.id)
 
-                await ctx.send("TTT Suggestion box is now on in this channel.")
+                await ctx.send("suggestalphaionBox is now on in this channel.")
 
-    @set-tttsuggest.command(name="off", pass_context=True, no_pm=True)
-    async def _set-tttsuggest_off(self, ctx):
-        """Turn off TTT Suggestion box in the current channel"""
+    @setsuggestalpha.command(name="off", pass_context=True, no_pm=True)
+    async def _setsuggestalpha_off(self, ctx):
+        """Turn off suggestalphaionBox in the current channel"""
         guild_group = self.config.guild(ctx.guild)
 
         async with guild_group.channels_enabled() as channels_enabled:
             channel = ctx.message.channel
             if channel.id not in channels_enabled:
-                await ctx.send("TTT Suggestion box is already off in this channel.")
+                await ctx.send("suggestalphaionBox is already off in this channel.")
             else:
                 channels_enabled.remove(channel.id)
 
-                await ctx.send("TTT Suggestion box is now off in this channel.")
+                await ctx.send("suggestalphaionBox is now off in this channel.")
 
-    @set-tttsuggest.command(name="block", pass_context=True, no_pm=True)
+    @setsuggestalpha.command(name="block", pass_context=True, no_pm=True)
     async def block(self, ctx, user: discord.Member):
-        """Blocks a user from making tttsuggestions."""
+        """Blocks a user from making suggestalphaions."""
         guild = ctx.guild
         group = self.config.guild(guild)
 
         async with group.blocked_ids() as blocked_ids:
             if user.id in blocked_ids:
-                await ctx.send("This user is already in the block list, did you mean to `--set-tttsuggest unblock`?")
+                await ctx.send("This user is already in the block list, did you mean to `--setsuggestalpha unblock`?")
             else:
                 blocked_ids.append(user.id)
                 await ctx.send("User blocked.")
 
-    @set-tttsuggest.command(name="unblock", pass_context=True, no_pm=True)
+    @setsuggestalpha.command(name="unblock", pass_context=True, no_pm=True)
     async def unblock(self, ctx, user: discord.Member):
-        """Unblocks a user from making tttsuggestions."""
+        """Unblocks a user from making suggestalphaions."""
         guild = ctx.guild
         group = self.config.guild(guild)
 
         async with group.blocked_ids() as blocked_ids:
             if user.id not in blocked_ids:
-                await ctx.send("This user isn't in the block list, did you mean to `--set-tttsuggest block`?")
+                await ctx.send("This user isn't in the block list, did you mean to `--setsuggestalpha block`?")
             else:
                 blocked_ids.remove(user.id)
                 await ctx.send("User unblocked.")
 
-    @set-tttsuggest.command(name="anonymous", pass_context=True, no_pm=True)
+    @setsuggestalpha.command(name="anonymous", pass_context=True, no_pm=True)
     async def anonymous(self, ctx):
-        """Toggles whether or not the tttsuggestions are anonymous."""
+        """Toggles whether or not the suggestalphaions are anonymous."""
         guild = ctx.guild
 
         current_val = await self.config.guild(guild).anonymous()
         current_val = not current_val
 
         if current_val:
-            await ctx.send("tttsuggestions are now anonymous.")
+            await ctx.send("suggestalphaions are now anonymous.")
         else:
-            await ctx.send("tttsuggestions are no longer anonymous.")
+            await ctx.send("suggestalphaions are no longer anonymous.")
 
         await self.config.guild(guild).anonymous.set(current_val)
 
-    @commands.command(name="tttsuggest", pass_context=True)
-    async def maketttsuggestion(self, ctx):
-        "make a tttsuggestion by following the prompts"
+    @commands.command(name="suggestalpha", pass_context=True)
+    async def makesuggestalphaion(self, ctx):
+        "make a suggestalphaion by following the prompts"
         author = ctx.message.author
         guild = ctx.guild
         group = self.config.guild(guild)
@@ -125,24 +125,24 @@ class tttsuggest(commands.Cog):
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
 
-            message = await self.bot.wait_for("message", check=check_message, timeout=120)
+            message = await self.bot.wait_for("message", check=check_message, timeout=300)
 
             if message is None:
                 await author.send("I can't wait forever, try again when ready.")
                     
                 self.usercache.remove(author.id)
             else:
-                await self.send_tttsuggest(message, guild)
+                await self.send_suggestalpha(message, guild)
                 await author.send("Your suggestion was submitted.")
 
-    async def send_tttsuggest(self, message, guild):
+    async def send_suggestalpha(self, message, guild):
         author = guild.get_member(message.author.id)
         group = self.config.guild(guild)
-        tttsuggestion = message.clean_content
+        suggestalphaion = message.clean_content
         avatar = author.avatar_url if author.avatar \
             else author.default_avatar_url
 
-        em = discord.Embed(description=tttsuggestion,
+        em = discord.Embed(description=suggestalphaion,
                            color=discord.Color.purple())
 
 
