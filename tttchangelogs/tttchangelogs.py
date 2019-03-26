@@ -120,7 +120,7 @@ class TTTChangelogs(commands.Cog):
                     
             self.usercache.append(author.id)
                     
-            dm = await author.send("Copy and paste this ```__**x changes**__"
+            dm = await author.send("Copy and paste this ```__**x changes**__ \n"
                                     "   *x:*\n"
                                     "     - \n"
                                     "     - \n"
