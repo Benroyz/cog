@@ -121,10 +121,10 @@ class TTTChangelogs(commands.Cog):
             self.usercache.append(author.id)
                     
             dm = await author.send("Copy and paste this ```__**x changes**__"
-                                    "*x:*"
-                                    "  -"
-                                    "  -"
-                                    "  -``` for the formatting. ")
+                                    "*x:\n*"
+                                    "  -\n"
+                                    "  -\n"
+                                    "  -\n``` for the formatting. ")
         
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
