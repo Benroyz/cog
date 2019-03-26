@@ -160,7 +160,7 @@ class TTTChangelogs(commands.Cog):
             else:
                 em.set_author(name=author.name + "#" + author.discriminator + " / " + datetime.date.today().strftime("%B %d, %Y"), icon_url=avatar)
 
-            em.set_footer(text="Implemented and changed by" + author.discriminator + ".")
+            em.set_footer(text="Implemented and changed by" name=author.name + "#" + author.discriminator + ".")
 
             for channel in channels_enabled:
                 where = guild.get_channel(channel)
