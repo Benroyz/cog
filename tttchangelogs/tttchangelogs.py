@@ -110,21 +110,21 @@ class TTTChangelogs(commands.Cog):
 
         async with group.blocked_ids() as blocked_ids:
             if author.id in self.usercache:
-                return await ctx.send("Finish making your prior suggestion "
+                return await ctx.send("Finish making your prior changelogs "
                                           "before making an additional one")
 
             if author.id in blocked_ids:
                 return await ctx.send("You are blocked from making suggestion.")
 
-            await ctx.send("I will message you to collect your suggestion.")
+            await ctx.send("I will message you to collect your changelogs..")
                     
             self.usercache.append(author.id)
                     
             dm = await author.send("Copy and paste this ```__**x changes**__"
-                                    "*x:\n*"
-                                    "  -\n"
-                                    "  -\n"
-                                    "  -\n``` for the formatting. ")
+                                    "   *x:*\n"
+                                    "     - \n"
+                                    "     - \n"
+                                    "     - \n``` for the formatting. ")
         
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
@@ -137,7 +137,7 @@ class TTTChangelogs(commands.Cog):
                 self.usercache.remove(author.id)
             else:
                 await self.send_changelogs(message, guild)
-                await author.send("Your suggestion was submitted.")
+                await author.send("Your changelog was submitted.")
 
     async def send_changelogs(self, message, guild):
         author = guild.get_member(message.author.id)
