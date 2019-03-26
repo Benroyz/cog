@@ -101,7 +101,7 @@ class TTTChangelogs(commands.Cog):
         await self.config.guild(guild).anonymous.set(current_val)
 
     @commands.command(name="changelogs", pass_context=True)
-	checks.admin_or_permissions(manage_messages=True)
+    @checks.admin_or_permissions(manage_messages=True)
     async def makechangelogsion(self, ctx):
         "make a changelogsion by following the prompts"
         author = ctx.message.author
