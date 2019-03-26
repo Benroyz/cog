@@ -129,7 +129,7 @@ class TTTChangelogs(commands.Cog):
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
 
-            message = await self.bot.wait_for("message", check=check_message, timeout=300)
+            message = await self.bot.wait_for("message", check=check_message, timeout=3600)
 
             if message is None:
                 await author.send("I can't wait forever, try again when ready.")
