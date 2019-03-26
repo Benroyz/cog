@@ -120,7 +120,11 @@ class TTTChangelogs(commands.Cog):
                     
             self.usercache.append(author.id)
                     
-            dm = await author.send("Enter your chaangelog here.")
+            dm = await author.send("Copy and paste this ```__**x changes**__
+    "*x:*"
+      "  -"
+      "  -"
+      "  -``` for the formatting. ")
         
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
@@ -160,7 +164,7 @@ class TTTChangelogs(commands.Cog):
             else:
                 em.set_author(name=author.name + "#" + author.discriminator + " / " + datetime.date.today().strftime("%B %d, %Y"), icon_url=avatar)
 
-            em.set_footer(text="Implemented and changed by" + author.name + "#" + author.discriminator + ".")
+            em.set_footer(text="Implemented and changed by " + author.name + "#" + author.discriminator + ".")
 
             for channel in channels_enabled:
                 where = guild.get_channel(channel)
