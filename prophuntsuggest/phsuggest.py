@@ -109,25 +109,22 @@ class PHSuggestionBox(commands.Cog):
 
         async with group.blocked_ids() as blocked_ids:
             if author.id in self.usercache:
-                return await ctx.send("Finish making your prior phsuggestion "
+                return await ctx.send("Finish making your prior suggestion "
                                           "before making an additional one")
 
             if author.id in blocked_ids:
-                return await ctx.send("You are blocked from making phsuggestions.")
+                return await ctx.send("You are blocked from making suggestions.")
 
-            await ctx.send("I will message you to collect your phsuggestion.")
+            await ctx.send("I will message you to collect your suggestion.")
                     
             self.usercache.append(author.id)
                     
-            dm = await author.send("Please respond to this message with your phsuggestion.\nYour "
-                                   "phsuggestion should be a single message (one image allowed). "
-                                   "If you are phsuggesting an emote and it is common on many other servers, " 
-                                   "global servers, or personal, it will most likely not be accepted.")
+            dm = await author.send("Please respond to this message with your Prop Hunt server suggestion.")
         
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
 
-            message = await self.bot.wait_for("message", check=check_message, timeout=120)
+            message = await self.bot.wait_for("message", check=check_message, timeout=300)
 
             if message is None:
                 await author.send("I can't wait forever, try again when ready.")
