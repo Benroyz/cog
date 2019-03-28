@@ -101,6 +101,7 @@ class PHToDo(commands.Cog):
         await self.config.guild(guild).anonymous.set(current_val)
 
     @commands.command(name="phtodo", pass_context=True)
+    @checks.admin_or_permissions(manage_messages=True)
     async def makephtodoion(self, ctx):
         "make a phtodoion by following the prompts"
         author = ctx.message.author
