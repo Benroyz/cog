@@ -110,17 +110,17 @@ class PHToDo(commands.Cog):
 
         async with group.blocked_ids() as blocked_ids:
             if author.id in self.usercache:
-                return await ctx.send("Finish making your prior suggestion "
+                return await ctx.send("Finish making your prior todo messages "
                                           "before making an additional one")
 
             if author.id in blocked_ids:
                 return await ctx.send("You are blocked from making suggestions.")
 
-            await ctx.send("I will message you to collect your suggestion.")
+            await ctx.send("I will message you to collect your todo.")
                     
             self.usercache.append(author.id)
                     
-            dm = await author.send("Please respond to this message with your Prop Hunt server suggestion.")
+            dm = await author.send("Hit your todo task with this.")
         
             def check_message(m):
                 return m.channel == dm.channel and m.author == author
@@ -160,7 +160,7 @@ class PHToDo(commands.Cog):
             else:
                 em.set_author(name=author.name + "#" + author.discriminator + " / " + datetime.date.today().strftime("%B %d, %Y"), icon_url=avatar)
 
-            em.set_footer(text="Vote on whether or not you'd like to see this implemented!")
+            em.set_footer(text="Planned by" + author.name + ".")
 
             for channel in channels_enabled:
                 where = guild.get_channel(channel)
