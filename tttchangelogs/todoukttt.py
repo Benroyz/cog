@@ -160,7 +160,7 @@ class TTTUKtodo(commands.Cog):
             else:
                 em.set_author(name=author.name + "#" + author.discriminator + " / " + datetime.date.today().strftime("%B %d, %Y"), icon_url=avatar)
 
-            em.set_footer(text="Planned by" + author.name + ".")
+            em.set_footer(text="Planned by " + author.name + ".")
 
             for channel in channels_enabled:
                 where = guild.get_channel(channel)
