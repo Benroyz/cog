@@ -5,7 +5,7 @@ import discord
 from redbot.core import commands, checks, Config
 
 
-class PHToDo(commands.Cog):
+class TTTUKtodo(commands.Cog):
     """custom cog for a configurable tttuktodoion box"""
 
     def __init__(self, bot):
