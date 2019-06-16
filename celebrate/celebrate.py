@@ -81,7 +81,7 @@ class Celebrate(commands.Cog):
         message = await ctx.send(msg)
 
         try:
-            await message.add_reaction("\U0001f1eb")
+            await message.add_reaction("celebrate")
             self.messager[channel.id] = []
             react = True
         except:
