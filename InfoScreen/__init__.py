@@ -1,4 +1,4 @@
-from infoscreen.rules import InfoScreen
+from InfoScreen.rules import InfoScreen
 
 
 async def setup(bot):
