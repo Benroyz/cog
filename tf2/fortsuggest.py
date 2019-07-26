@@ -6,7 +6,7 @@ from redbot.core import commands, checks, Config
 
 
 class Fort(commands.Cog):
-    """custom cog for a configurable 2Fort Suggestion box"""
+    """custom cog for a configurable High Suggestion box"""
 
     def __init__(self, bot):
         self.bot = bot
@@ -23,86 +23,86 @@ class Fort(commands.Cog):
 
         self.config.register_guild(**default_guild)
 
-    @commands.group(name="set2fortsuggest", pass_context=True, no_pm=True)
+    @commands.group(name="setfortsuggest", pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_guild=True)
-    async def set2fortsuggest(self, ctx):
+    async def setfortsuggest(self, ctx):
         """configuration settings"""
 
         pass
 
     
-    @set2fortsuggest.command(name="on", pass_context=True, no_pm=True)
-    async def _set2fortsuggest_on(self, ctx):
-        """Turn on 2fortsuggestionBox in the current channel"""
+    @setfortsuggest.command(name="on", pass_context=True, no_pm=True)
+    async def _setfortsuggest_on(self, ctx):
+        """Turn on fortsuggestionBox in the current channel"""
         guild_group = self.config.guild(ctx.guild)
 
         async with guild_group.channels_enabled() as channels_enabled:
             channel = ctx.message.channel
             if channel.id in channels_enabled:
-                await ctx.send("2fortsuggestionBox is already on in this channel.")
+                await ctx.send("fortsuggestionBox is already on in this channel.")
             else:
                 channels_enabled.append(channel.id)
 
-                await ctx.send("2fortsuggestionBox is now on in this channel.")
+                await ctx.send("fortsuggestionBox is now on in this channel.")
 
-    @set2fortsuggest.command(name="off", pass_context=True, no_pm=True)
-    async def _set2fortsuggest_off(self, ctx):
-        """Turn off 2fortsuggestionBox in the current channel"""
+    @setfortsuggest.command(name="off", pass_context=True, no_pm=True)
+    async def _setfortsuggest_off(self, ctx):
+        """Turn off fortsuggestionBox in the current channel"""
         guild_group = self.config.guild(ctx.guild)
 
         async with guild_group.channels_enabled() as channels_enabled:
             channel = ctx.message.channel
             if channel.id not in channels_enabled:
-                await ctx.send("2fortsuggestionBox is already off in this channel.")
+                await ctx.send("fortsuggestionBox is already off in this channel.")
             else:
                 channels_enabled.remove(channel.id)
 
-                await ctx.send("2fortsuggestionBox is now off in this channel.")
+                await ctx.send("fortsuggestionBox is now off in this channel.")
 
-    @set2fortsuggest.command(name="block", pass_context=True, no_pm=True)
+    @setfortsuggest.command(name="block", pass_context=True, no_pm=True)
     async def block(self, ctx, user: discord.Member):
-        """Blocks a user from making 2fortsuggestions."""
+        """Blocks a user from making fortsuggestions."""
         guild = ctx.guild
         group = self.config.guild(guild)
 
         async with group.blocked_ids() as blocked_ids:
             if user.id in blocked_ids:
-                await ctx.send("This user is already in the block list, did you mean to `--set2fortsuggest unblock`?")
+                await ctx.send("This user is already in the block list, did you mean to `--setfortsuggest unblock`?")
             else:
                 blocked_ids.append(user.id)
                 await ctx.send("User blocked.")
 
-    @set2fortsuggest.command(name="unblock", pass_context=True, no_pm=True)
+    @setfortsuggest.command(name="unblock", pass_context=True, no_pm=True)
     async def unblock(self, ctx, user: discord.Member):
-        """Unblocks a user from making 2fortsuggestions."""
+        """Unblocks a user from making fortsuggestions."""
         guild = ctx.guild
         group = self.config.guild(guild)
 
         async with group.blocked_ids() as blocked_ids:
             if user.id not in blocked_ids:
-                await ctx.send("This user isn't in the block list, did you mean to `--set2fortsuggest block`?")
+                await ctx.send("This user isn't in the block list, did you mean to `--setfortsuggest block`?")
             else:
                 blocked_ids.remove(user.id)
                 await ctx.send("User unblocked.")
 
-    @set2fortsuggest.command(name="anonymous", pass_context=True, no_pm=True)
+    @setfortsuggest.command(name="anonymous", pass_context=True, no_pm=True)
     async def anonymous(self, ctx):
-        """Toggles whether or not the 2fortsuggestions are anonymous."""
+        """Toggles whether or not the fortsuggestions are anonymous."""
         guild = ctx.guild
 
         current_val = await self.config.guild(guild).anonymous()
         current_val = not current_val
 
         if current_val:
-            await ctx.send("2fortsuggestions are now anonymous.")
+            await ctx.send("fortsuggestions are now anonymous.")
         else:
-            await ctx.send("2fortsuggestions are no longer anonymous.")
+            await ctx.send("fortsuggestions are no longer anonymous.")
 
         await self.config.guild(guild).anonymous.set(current_val)
 
-    @commands.command(name="2fortsuggest", pass_context=True)
-    async def make2fortsuggestion(self, ctx):
-        "make a 2fortsuggestion by following the prompts"
+    @commands.command(name="fortsuggest", pass_context=True)
+    async def makefortsuggestion(self, ctx):
+        "make a fortsuggestion by following the prompts"
         author = ctx.message.author
         guild = ctx.guild
         group = self.config.guild(guild)
@@ -131,17 +131,17 @@ class Fort(commands.Cog):
                     
                 self.usercache.remove(author.id)
             else:
-                await self.send_2fortsuggest(message, guild)
+                await self.send_fortsuggest(message, guild)
                 await author.send("Your suggestion was submitted.")
 
-    async def send_2fortsuggest(self, message, guild):
+    async def send_fortsuggest(self, message, guild):
         author = guild.get_member(message.author.id)
         group = self.config.guild(guild)
-        2fortsuggestion = message.clean_content
+        fortsuggestion = message.clean_content
         avatar = author.avatar_url if author.avatar \
             else author.default_avatar_url
 
-        em = discord.Embed(description=2fortsuggestion,
+        em = discord.Embed(description=fortsuggestion,
                            color=discord.Color.purple())
 
 
