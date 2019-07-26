@@ -5,7 +5,7 @@ import discord
 from redbot.core import commands, checks, Config
 
 
-class 2Fort(commands.Cog):
+class Fort(commands.Cog):
     """custom cog for a configurable 2Fort Suggestion box"""
 
     def __init__(self, bot):
