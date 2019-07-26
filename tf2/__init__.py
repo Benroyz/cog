@@ -1,7 +1,7 @@
-from .2fortsuggest import 2FortSuggest
+from .2fortsuggest import Fort
 from .hightowersuggest import HighTowerSuggest
 
 
 def setup(bot):
-    bot.add_cog(2FortSuggest(bot))
+    bot.add_cog(Fort(bot))
     bot.add_cog(HighTowerSuggest(bot))
