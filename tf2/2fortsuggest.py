@@ -5,7 +5,7 @@ import discord
 from redbot.core import commands, checks, Config
 
 
-class TTTSuggest(commands.Cog):
+class 2Fort(commands.Cog):
     """custom cog for a configurable 2Fort Suggestion box"""
 
     def __init__(self, bot):
