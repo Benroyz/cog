@@ -1,4 +1,4 @@
-from .2fortsuggest import Fort
+from .fortsuggest import Fort
 from .hightowersuggest import HighTowerSuggest
 
 
