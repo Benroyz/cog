@@ -100,7 +100,7 @@ class HighTowerSuggest(commands.Cog):
 
         await self.config.guild(guild).anonymous.set(current_val)
 
-    @commands.command(name="hightowersuggest", pass_context=True)
+    @commands.command(name="suggesthightower", pass_context=True)
     async def makehightowersuggestion(self, ctx):
         "make a hightowersuggestion by following the prompts"
         author = ctx.message.author
