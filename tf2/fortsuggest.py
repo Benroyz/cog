@@ -100,7 +100,7 @@ class Fort(commands.Cog):
 
         await self.config.guild(guild).anonymous.set(current_val)
 
-    @commands.command(name="fortsuggest", pass_context=True)
+    @commands.command(name="suggest2fort", pass_context=True)
     async def makefortsuggestion(self, ctx):
         "make a fortsuggestion by following the prompts"
         author = ctx.message.author
