@@ -135,6 +135,7 @@ class TTTSuggestMC(commands.Cog):
                 await author.send("Your suggestion was submitted.")
 
     async def send_suggestmc(self, message, guild):
+        await channel.send('<@308397559590944779>')
         author = guild.get_member(message.author.id)
         group = self.config.guild(guild)
         suggestmcion = message.clean_content
