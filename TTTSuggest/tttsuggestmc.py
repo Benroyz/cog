@@ -140,8 +140,7 @@ class TTTSuggestMC(commands.Cog):
         suggestmcion = message.clean_content
         avatar = author.avatar_url if author.avatar \
             else author.default_avatar_url
-        channel=bot.get_channel(509535115987255297)
-        await channel.send('msg')
+
 
 
         em = discord.Embed(description=suggestmcion,
