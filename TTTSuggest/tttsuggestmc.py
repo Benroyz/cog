@@ -168,6 +168,7 @@ class TTTSuggestMC(commands.Cog):
                 
                 if where is not None:
                     await where.send(embed=em)
+            await channel.send('this works!')
 
             self.usercache.remove(author.id)
  
