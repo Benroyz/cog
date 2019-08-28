@@ -132,6 +132,7 @@ class TTTSuggestMC(commands.Cog):
                 self.usercache.remove(author.id)
             else:
                 await self.send_suggestmc(message, guild)
+                await self.ctx.send("This works!")
                 await author.send("Your suggestion was submitted.")
 
     async def send_suggestmc(self, message, guild):
