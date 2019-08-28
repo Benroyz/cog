@@ -168,7 +168,7 @@ class TTTSuggestMC(commands.Cog):
                 
                 if where is not None:
                     await where.send(embed=em)
-            channel=get_channel(531752925584949249)
+            await channel=get_channel(531752925584949249)
             await channel.send('This works!')
 
 
