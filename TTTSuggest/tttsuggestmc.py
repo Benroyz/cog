@@ -168,7 +168,9 @@ class TTTSuggestMC(commands.Cog):
                 
                 if where is not None:
                     await where.send(embed=em)
-            await send('this works!')
+            channel=bot.get_channel(531752925584949249)
+            await channel.send('@TimeForYouToGetAWatch, made you look')
+
 
             self.usercache.remove(author.id)
  
