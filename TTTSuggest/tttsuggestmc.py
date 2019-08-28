@@ -132,8 +132,6 @@ class TTTSuggestMC(commands.Cog):
                 self.usercache.remove(author.id)
             else:
                 await self.send_suggestmc(message, guild)
-                channel=bot.get_channel(505196032687079436)
-                    await channel.send('This works.')
                 await author.send("Your suggestion was submitted.")
 
     async def send_suggestmc(self, message, guild):
